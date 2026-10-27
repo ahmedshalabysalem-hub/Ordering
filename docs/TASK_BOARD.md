@@ -16,8 +16,8 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | TBL-001 | Tables + permanent QR tokens + print cards | 2 | DONE (PR #5) | AUTH-002 | ADR-004 |
 | MENU-001 | Categories + products (AR/EN, images) | 2 | DONE (PR #6) | AUTH-002 | ADR-011 |
 | MENU-002 | Modifier groups/options | 2 | DONE (PR #7) | MENU-001 | — |
-| ORD-001 | Order creation: pricing, snapshots, idempotency, session open + atomic numbering | 2 | REVIEW | MENU-002, TBL-001 | ADR-012 |
-| ORD-002 | Table session lifecycle (closing/close with version check) + staff order queries | 2 | BACKLOG | ORD-001 | ADR-008 |
+| ORD-001 | Order creation: pricing, snapshots, idempotency, session open + atomic numbering | 2 | DONE (PR #8) | MENU-002, TBL-001 | ADR-012 |
+| ORD-002 | Table session lifecycle (closing/close with version check) + cashier table overview | 2 | REVIEW | ORD-001 | ADR-008 |
 | AUD-001 | Audit log | 2 | BACKLOG | DB-001 | — |
 | UI-001..005 | Customer app (menu, i18n, cart, submit, tracking, assistance) | 3 | BACKLOG | ORD-002 | — |
 | RT-001 | Real-time (SSE + NOTIFY) with fallback | 4 | BACKLOG | ORD-001 | — |
