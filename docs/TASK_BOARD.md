@@ -10,8 +10,8 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | ARCH-002 | Skeleton, tooling, Docker, CI | 1 | DONE | ARCH-001 | ADR-005, PR #1 |
 | ARCH-003 | Data model design | 1 | DONE | ADR-006 | ADR-007 |
 | ARCH-004 | State machines + permission matrix | 1 | DONE | ADR-006 | ADR-008 |
-| DB-001 | Initial schema, migrations, constraint tests | 2 | REVIEW | ARCH-002, ADR-007 | — |
-| AUTH-001 | Staff auth, sessions, lockout, admin bootstrap | 2 | BACKLOG | DB-001 | — |
+| DB-001 | Initial schema, migrations, constraint tests | 2 | DONE | ARCH-002, ADR-007 | PR #2 |
+| AUTH-001 | Staff auth, sessions, lockout, admin bootstrap | 2 | REVIEW | DB-001 | ADR-009 |
 | AUTH-002 | Server-side RBAC guard | 2 | BACKLOG | AUTH-001 | ADR-008 |
 | TBL-001 | Tables + permanent QR tokens + print cards | 2 | BACKLOG | AUTH-002 | ADR-004 |
 | MENU-001 | Categories + products (AR/EN, images) | 2 | BACKLOG | AUTH-002 | — |

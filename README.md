@@ -14,9 +14,10 @@ Requirements: Node 22, pnpm 10, Docker (or a local PostgreSQL 16).
 
 ```bash
 pnpm install
-cp .env.example .env.local
+cp .env.example .env.local     # then set BETTER_AUTH_SECRET
 docker compose up -d db        # PostgreSQL on localhost:5432 (creates `ordering` and `ordering_test`)
 pnpm db:migrate                 # apply migrations (reads DATABASE_URL from .env.local)
+pnpm admin:bootstrap --email you@example.com --name "Your Name"   # first admin, once
 pnpm dev                       # http://localhost:3000, health check at /api/health
 ```
 
@@ -32,5 +33,6 @@ pnpm dev                       # http://localhost:3000, health check at /api/hea
 | `pnpm test:integration` | Integration tests (needs `DATABASE_URL`) |
 | `pnpm test:e2e` | Playwright E2E against the production build (run `pnpm build` first) |
 | `pnpm db:generate` / `pnpm db:migrate` | Create / apply Drizzle migrations (`drizzle/`) |
+| `pnpm admin:bootstrap` | Create the first administrator (refuses once one exists); password via prompt or `BOOTSTRAP_ADMIN_PASSWORD` |
 
 See `docs/TESTING.md` for the test strategy.
