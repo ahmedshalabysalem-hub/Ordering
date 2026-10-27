@@ -29,11 +29,16 @@ async function MenuOverview() {
         <h2 className="text-lg font-medium">Add a category</h2>
         <CategoryForm action={createCategoryAction} submitLabel="Add category" />
       </section>
-      {categories.length > 0 && (
-        <Link href="/admin/menu/products/new" className="self-start rounded-md bg-zinc-900 px-4 py-2 font-medium text-white">
-          Add product
+      <div className="flex flex-wrap items-center gap-4">
+        {categories.length > 0 && (
+          <Link href="/admin/menu/products/new" className="rounded-md bg-zinc-900 px-4 py-2 font-medium text-white">
+            Add product
+          </Link>
+        )}
+        <Link href="/admin/menu/options" className="underline">
+          Option groups (sizes, extras)
         </Link>
-      )}
+      </div>
       {categories.length === 0 && <p className="text-zinc-600">No categories yet. Add one above, then add products to it.</p>}
       {categories.map((category) => (
         <section key={category.id} className="flex flex-col gap-2" aria-labelledby={`category-${category.id}`}>

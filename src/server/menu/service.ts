@@ -276,3 +276,8 @@ export async function setProductAvailability(staff: StaffUser, id: string, isAva
     return row;
   });
 }
+
+/** The currency menu prices are entered in (the branch currency). */
+export async function getMenuCurrency(staff: StaffUser): Promise<string> {
+  return branchCurrency(branchFor(staff, "menu.manage"));
+}
