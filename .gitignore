@@ -20,6 +20,9 @@
 # production
 /build
 
+# uploaded media (ADR-011)
+/storage/
+
 # misc
 .DS_Store
 *.pem

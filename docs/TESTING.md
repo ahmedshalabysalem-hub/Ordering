@@ -7,7 +7,7 @@
 | E2E | Playwright (Chromium) | `tests/e2e` | Yes | `pnpm build && pnpm test:e2e` |
 
 - Integration and E2E tests use a real PostgreSQL, never mocks. They **drop and recreate** the database in `DATABASE_URL`, and refuse unless its name ends in `_test` (e.g. `ordering_test`).
-- Both also need `BETTER_AUTH_SECRET` (any 32+ characters) and, for E2E, `BETTER_AUTH_URL=http://localhost:3100`. `BETTER_AUTH_URL` is also the public base URL printed in table QR codes.
+- Both also need `BETTER_AUTH_SECRET` (any 32+ characters) and, for E2E, `BETTER_AUTH_URL=http://localhost:3100`. `BETTER_AUTH_URL` is also the public base URL printed in table QR codes. Integration tests store uploads in a temporary folder; E2E uses `UPLOAD_DIR` (default `./storage/uploads`, git-ignored).
 - E2E starts `pnpm start` on port 3100 (`E2E_PORT` to change) and reuses a running server locally.
 - CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit, integration, build and E2E on every PR against a PostgreSQL 16 service.
 
