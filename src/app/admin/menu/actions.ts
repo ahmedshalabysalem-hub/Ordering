@@ -14,6 +14,13 @@ import {
   updateCategory,
   updateProduct,
 } from "@/server/menu/service";
+import {
+  addModifierOption,
+  createModifierGroup,
+  setProductModifierGroups,
+  updateModifierGroup,
+  updateModifierOption,
+} from "@/server/menu/modifiers";
 import { MoneyError } from "@/server/money";
 
 export type FormState = { error?: string; ok?: string };
@@ -28,6 +35,8 @@ const FIELD_LABELS: Record<string, string> = {
   sortOrder: "Display order",
   prepStation: "Preparation station",
   prepMinutes: "Preparation time",
+  minSelect: "Minimum choices",
+  maxSelect: "Maximum choices (at least 1, and not less than the minimum)",
 };
 
 function toMessage(e: unknown): string {
@@ -122,4 +131,81 @@ export async function setAvailabilityAction(id: string, isAvailable: boolean): P
   const staff = await authorize("product.toggle_availability");
   await setProductAvailability(staff, id, isAvailable);
   revalidatePath("/admin/menu");
+}
+
+function groupForm(formData: FormData) {
+  return {
+    nameAr: text(formData, "nameAr") ?? "",
+    nameEn: text(formData, "nameEn") ?? "",
+    minSelect: text(formData, "minSelect") || 0,
+    maxSelect: text(formData, "maxSelect") || 1,
+    isActive: formData.get("isActive") === "on",
+  };
+}
+
+function optionForm(formData: FormData) {
+  return {
+    nameAr: text(formData, "nameAr") ?? "",
+    nameEn: text(formData, "nameEn") ?? "",
+    priceDelta: text(formData, "priceDelta") ?? "",
+    sortOrder: text(formData, "sortOrder") || 0,
+    isAvailable: formData.get("isAvailable") === "on",
+  };
+}
+
+export async function createGroupAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  let id: string;
+  try {
+    const staff = await authorize("menu.manage");
+    id = (await createModifierGroup(staff, groupForm(formData))).id;
+  } catch (e) {
+    return { error: toMessage(e) };
+  }
+  revalidatePath("/admin/menu/options");
+  redirect(`/admin/menu/options/${id}`);
+}
+
+export async function updateGroupAction(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    const staff = await authorize("menu.manage");
+    await updateModifierGroup(staff, id, groupForm(formData));
+  } catch (e) {
+    return { error: toMessage(e) };
+  }
+  revalidatePath("/admin/menu/options");
+  revalidatePath(`/admin/menu/options/${id}`);
+  return { ok: "Saved." };
+}
+
+export async function addOptionAction(groupId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    const staff = await authorize("menu.manage");
+    await addModifierOption(staff, groupId, optionForm(formData));
+  } catch (e) {
+    return { error: toMessage(e) };
+  }
+  revalidatePath(`/admin/menu/options/${groupId}`);
+  return { ok: "Option added." };
+}
+
+export async function updateOptionAction(id: string, groupId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    const staff = await authorize("menu.manage");
+    await updateModifierOption(staff, id, optionForm(formData));
+  } catch (e) {
+    return { error: toMessage(e) };
+  }
+  revalidatePath(`/admin/menu/options/${groupId}`);
+  return { ok: "Saved." };
+}
+
+export async function setProductGroupsAction(productId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    const staff = await authorize("menu.manage");
+    await setProductModifierGroups(staff, productId, formData.getAll("groupIds") as string[]);
+  } catch (e) {
+    return { error: toMessage(e) };
+  }
+  revalidatePath(`/admin/menu/products/${productId}`);
+  return { ok: "Option groups saved." };
 }

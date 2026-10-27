@@ -3,10 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { requirePermission } from "@/server/auth/session";
+import { getProductModifierGroupIds, listModifierGroups } from "@/server/menu/modifiers";
 import { getMenuOverview, getProduct } from "@/server/menu/service";
 import { minorToDecimal } from "@/server/money";
-import { updateProductAction } from "../../actions";
+import { setProductGroupsAction, updateProductAction } from "../../actions";
+import { groupRule } from "../../group-rule";
 import { ProductForm } from "../../product-form";
+import { ProductGroupsForm } from "../../product-groups-form";
 
 export const metadata: Metadata = { title: "Edit product" };
 
@@ -26,7 +29,12 @@ export default function ProductPage({ params }: PageProps<"/admin/menu/products/
 async function ProductDetails({ params }: { params: PageProps<"/admin/menu/products/[id]">["params"] }) {
   const staff = await requirePermission("menu.manage");
   const { id } = await params;
-  const [product, { currency, categories }] = await Promise.all([getProduct(staff, id), getMenuOverview(staff)]);
+  const [product, { currency, categories }, groups, linked] = await Promise.all([
+    getProduct(staff, id),
+    getMenuOverview(staff),
+    listModifierGroups(staff),
+    getProductModifierGroupIds(staff, id),
+  ]);
   if (!product) notFound();
   return (
     <>
@@ -42,6 +50,20 @@ async function ProductDetails({ params }: { params: PageProps<"/admin/menu/produ
         categories={categories}
         defaults={{ ...product, price: minorToDecimal(product.priceMinor, currency) }}
       />
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-medium">Option groups</h2>
+        {groups.length === 0 ? (
+          <p className="text-sm text-zinc-600">
+            No option groups yet. <Link href="/admin/menu/options" className="underline">Create one</Link> for sizes or extras.
+          </p>
+        ) : (
+          <ProductGroupsForm
+            action={setProductGroupsAction.bind(null, product.id)}
+            groups={groups.map((g) => ({ ...g, rule: groupRule(g.minSelect, g.maxSelect) }))}
+            selected={linked}
+          />
+        )}
+      </section>
     </>
   );
 }

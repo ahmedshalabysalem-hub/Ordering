@@ -77,6 +77,46 @@ test("an SVG disguised as a PNG is refused", async ({ page }) => {
   await expect(page.getByRole("alert").filter({ hasText: "Upload a JPEG, PNG or WebP image." })).toBeVisible();
 });
 
+test("admin creates a required Size group with priced options and links it to a product", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/admin/menu");
+  await page.getByRole("link", { name: "Option groups (sizes, extras)" }).click();
+  await expect(page.getByRole("heading", { name: "Option groups", level: 1 })).toBeVisible();
+
+  await page.getByRole("textbox", { name: "Name (Arabic)" }).fill("الحجم");
+  await page.getByRole("textbox", { name: "Name (English)" }).fill("Size");
+  await page.getByRole("spinbutton", { name: "Minimum choices" }).fill("2");
+  await page.getByRole("spinbutton", { name: "Maximum choices" }).fill("1");
+  await page.getByRole("button", { name: "Add group" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Maximum choices" })).toBeVisible();
+  await page.getByRole("spinbutton", { name: "Minimum choices" }).fill("1");
+  await page.getByRole("button", { name: "Add group" }).click();
+  await expect(page.getByText("Customers must follow this rule: required, choose 1.")).toBeVisible();
+
+  const add = page.getByRole("form", { name: "New option" });
+  await add.getByRole("textbox", { name: "Name (Arabic)" }).fill("صغير");
+  await add.getByRole("textbox", { name: "Name (English)" }).fill("Small");
+  await add.getByRole("button", { name: "Add option" }).click();
+  await expect(page.getByRole("form", { name: "Option Small" })).toBeVisible();
+  await expect(add.getByRole("textbox", { name: "Name (English)" })).toHaveValue("");
+
+  await add.getByRole("textbox", { name: "Name (Arabic)" }).fill("كبير");
+  await add.getByRole("textbox", { name: "Name (English)" }).fill("Large");
+  await add.getByRole("textbox", { name: "Extra price (EGP)" }).fill("10.50");
+  await add.getByRole("button", { name: "Add option" }).click();
+  await expect(page.getByRole("form", { name: "Option Large" }).getByRole("textbox", { name: "Extra price (EGP)" })).toHaveValue("10.50");
+
+  await page.goto("/admin/menu");
+  await page.getByRole("link", { name: "Edit Latte" }).click();
+  await expect(page.getByRole("heading", { name: "Edit Latte" })).toBeVisible();
+  const groups = page.getByRole("form", { name: "Option groups" });
+  await groups.getByRole("checkbox", { name: /Size/ }).check();
+  await groups.getByRole("button", { name: "Save option groups" }).click();
+  await expect(groups.getByRole("status")).toHaveText("Option groups saved.");
+  await page.reload();
+  await expect(page.getByRole("form", { name: "Option groups" }).getByRole("checkbox", { name: /Size/ })).toBeChecked();
+});
+
 test("signed-out visitors cannot reach menu admin, and unknown media is 404", async ({ page, request }) => {
   await page.goto("/admin/menu");
   await expect(page).toHaveURL(/\/login$/);
