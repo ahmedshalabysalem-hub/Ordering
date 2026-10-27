@@ -7,7 +7,7 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 |---|---|---|---|---|---|
 | DOC-001 | Define MVP scope | 1 | DONE | — | ADR-001, ADR-006 |
 | ARCH-001 | Choose stack and hosting | 1 | DONE | — | ADR-005 |
-| ARCH-002 | Skeleton, tooling, Docker, CI | 1 | REVIEW | ARCH-001 | ADR-005 |
+| ARCH-002 | Skeleton, tooling, Docker, CI | 1 | REVIEW | ARCH-001 | ADR-005, PR #1 |
 | ARCH-003 | Data model design | 1 | READY (draft) | ADR-006 | DR-003 (to raise) |
 | ARCH-004 | State machines + permission matrix | 1 | READY (draft) | ADR-006 | DR-004 (to raise) |
 | DB-001 | Initial migrations | 2 | BACKLOG | ARCH-002, DR-003 | — |

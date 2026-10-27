@@ -8,7 +8,7 @@ Phase 1 — Assessment and architecture.
 ## Current state
 - Product spec stored as `docs/SPEC.md` (ADR-001), including permanent table QR codes (ADR-004).
 - Stack approved: Next.js + PostgreSQL monolith (ADR-005). Business defaults approved (ADR-006).
-- ARCH-002 (skeleton + CI) in REVIEW: lint, typecheck, unit, integration, build and E2E pass locally; CI not yet run (push blocked by GitHub access).
+- ARCH-002 (skeleton + CI) in REVIEW as PR #1: lint, typecheck, unit, integration, build and E2E pass locally; CI result pending.
 
 ## Completed
 - Repository inspection, DOC-001 (scope), ARCH-001 (stack).
