@@ -14,7 +14,7 @@ Requirements: Node 22, pnpm 10, Docker (or a local PostgreSQL 16).
 
 ```bash
 pnpm install
-cp .env.example .env.local     # then set BETTER_AUTH_SECRET
+cp .env.example .env.local     # then set BETTER_AUTH_SECRET; BETTER_AUTH_URL is also the public URL in table QR codes
 docker compose up -d db        # PostgreSQL on localhost:5432 (creates `ordering` and `ordering_test`)
 pnpm db:migrate                 # apply migrations (reads DATABASE_URL from .env.local)
 pnpm admin:bootstrap --email you@example.com --name "Your Name"   # first admin, once
