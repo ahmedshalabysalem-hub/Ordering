@@ -62,3 +62,13 @@ describe("guards", () => {
     expect(assertCan(staff({ branchId: "b", role: "ADMIN" }), "menu.manage").id).toBe("u");
   });
 });
+
+describe("branchFor", () => {
+  it("returns the branch where the permission is held", async () => {
+    const { branchFor } = await import("@/server/auth/permissions");
+    const kitchen = staff({ branchId: "b1", role: "KITCHEN" });
+    expect(branchFor(kitchen, "product.toggle_availability")).toBe("b1");
+    expect(() => branchFor(kitchen, "menu.manage")).toThrow(AuthError);
+    expect(() => branchFor(null, "menu.manage")).toThrow(expect.objectContaining({ status: 401 }));
+  });
+});

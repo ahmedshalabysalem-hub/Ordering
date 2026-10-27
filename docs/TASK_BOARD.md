@@ -13,8 +13,8 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | DB-001 | Initial schema, migrations, constraint tests | 2 | DONE | ARCH-002, ADR-007 | PR #2 |
 | AUTH-001 | Staff auth, sessions, lockout, admin bootstrap | 2 | DONE | DB-001 | ADR-009, PR #3 |
 | AUTH-002 | Server-side RBAC guard | 2 | DONE (PR #4) | AUTH-001 | ADR-008 |
-| TBL-001 | Tables + permanent QR tokens + print cards | 2 | REVIEW | AUTH-002 | ADR-004 |
-| MENU-001 | Categories + products (AR/EN, images) | 2 | BACKLOG | AUTH-002 | — |
+| TBL-001 | Tables + permanent QR tokens + print cards | 2 | DONE (PR #5) | AUTH-002 | ADR-004 |
+| MENU-001 | Categories + products (AR/EN, images) | 2 | REVIEW | AUTH-002 | ADR-011 |
 | MENU-002 | Modifier groups/options | 2 | BACKLOG | MENU-001 | — |
 | ORD-001 | Order creation: pricing, snapshots, idempotency | 2 | BACKLOG | MENU-002, TBL-001 | — |
 | ORD-002 | Atomic order numbering + table sessions | 2 | BACKLOG | ORD-001 | — |

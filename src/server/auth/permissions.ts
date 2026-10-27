@@ -91,3 +91,14 @@ export function assertCan(staff: StaffUser | null, permission: Permission, branc
   if (!can(staff, permission, branchId)) throw new AuthError(403);
   return staff;
 }
+
+/**
+ * The branch where `staff` holds `permission` (the MVP has one branch per staff member).
+ * Throws AuthError like assertCan when there is none.
+ */
+export function branchFor(staff: StaffUser | null, permission: Permission): string {
+  if (!staff) throw new AuthError(401);
+  const role = staff.roles.find((r) => hasPermission([r.role], permission));
+  if (!role) throw new AuthError(403);
+  return role.branchId;
+}

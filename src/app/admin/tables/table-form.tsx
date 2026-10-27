@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useKeptForm } from "@/app/_components/use-kept-form";
 import type { FormState } from "./actions";
 
 type Props = {
@@ -12,9 +12,9 @@ type Props = {
 const input = "rounded-md border border-zinc-300 px-3 py-2 text-base font-normal";
 
 export function TableForm({ action, submitLabel, defaults = {} }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const { state, pending, formRef, onSubmit } = useKeptForm(action);
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3">
+    <form ref={formRef} onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <label className="flex flex-col gap-1 text-sm font-medium">
         Table number
         <input name="number" type="number" min={1} max={9999} required defaultValue={defaults.number} className={`${input} w-28`} />

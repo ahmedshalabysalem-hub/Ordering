@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
@@ -15,6 +17,7 @@ export default defineConfig({
           environment: "node",
           fileParallelism: false,
           globalSetup: ["tests/integration/global-setup.ts"],
+          env: { UPLOAD_DIR: path.join(tmpdir(), "ordering-test-uploads") },
         },
       },
     ],

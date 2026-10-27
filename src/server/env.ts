@@ -9,6 +9,8 @@ const envSchema = z.object({
     }),
   BETTER_AUTH_SECRET: z.string().min(32, { message: "BETTER_AUTH_SECRET must be at least 32 characters" }),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
+  // Where uploaded menu images are stored (ADR-011). Use a persistent volume in deployment.
+  UPLOAD_DIR: z.string().min(1).default("./storage/uploads"),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 

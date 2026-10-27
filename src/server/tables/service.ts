@@ -3,7 +3,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import { writeAudit } from "@/server/audit";
-import { assertCan, type StaffUser } from "@/server/auth/permissions";
+import { branchFor, type StaffUser } from "@/server/auth/permissions";
 import { db } from "@/server/db/client";
 import { branches, diningTables, restaurants } from "@/server/db/schema";
 
@@ -29,13 +29,6 @@ export function tableOrderUrl(baseUrl: string, qrToken: string) {
   return new URL(`/order/table/${encodeURIComponent(qrToken)}`, baseUrl).toString();
 }
 
-/** The branch the staff member manages tables in (single branch in the MVP). */
-export function managedBranchId(staff: StaffUser): string {
-  const branch = staff.roles.find((r) => r.role === "ADMIN");
-  if (!branch) throw new TableError("No branch to manage.");
-  return branch.branchId;
-}
-
 function isUniqueViolation(e: unknown, constraint: string) {
   const err = (e as { cause?: { code?: string; constraint_name?: string } }).cause ?? (e as { code?: string; constraint_name?: string });
   return err?.code === "23505" && err.constraint_name === constraint;
@@ -44,12 +37,12 @@ function isUniqueViolation(e: unknown, constraint: string) {
 const duplicateNumber = (n: number) => new TableError(`Table ${n} already exists.`);
 
 export async function listTables(staff: StaffUser): Promise<TableRow[]> {
-  const branchId = managedBranchId(assertCan(staff, "tables.manage"));
+  const branchId = branchFor(staff, "tables.manage");
   return db.select().from(diningTables).where(eq(diningTables.branchId, branchId)).orderBy(asc(diningTables.number));
 }
 
 export async function getTable(staff: StaffUser, id: string): Promise<TableRow | null> {
-  const branchId = managedBranchId(assertCan(staff, "tables.manage"));
+  const branchId = branchFor(staff, "tables.manage");
   const [row] = await db
     .select()
     .from(diningTables)
@@ -58,7 +51,7 @@ export async function getTable(staff: StaffUser, id: string): Promise<TableRow |
 }
 
 export async function createTable(staff: StaffUser, raw: TableInput): Promise<TableRow> {
-  const branchId = managedBranchId(assertCan(staff, "tables.manage"));
+  const branchId = branchFor(staff, "tables.manage");
   const input = tableInput.parse(raw);
   try {
     return await db.transaction(async (tx) => {
@@ -84,7 +77,7 @@ export async function createTable(staff: StaffUser, raw: TableInput): Promise<Ta
 
 /** Edits number, name, section or active flag. Never touches the QR token. */
 export async function updateTable(staff: StaffUser, id: string, raw: TableInput): Promise<TableRow> {
-  const branchId = managedBranchId(assertCan(staff, "tables.manage"));
+  const branchId = branchFor(staff, "tables.manage");
   const input = tableInput.parse(raw);
   try {
     return await db.transaction(async (tx) => {
@@ -114,7 +107,7 @@ export async function updateTable(staff: StaffUser, id: string, raw: TableInput)
 
 /** Explicit admin action: issues a new QR token; the old printed code stops working immediately. */
 export async function regenerateQrToken(staff: StaffUser, id: string, reason: string): Promise<TableRow> {
-  const branchId = managedBranchId(assertCan(staff, "qr.regenerate"));
+  const branchId = branchFor(staff, "qr.regenerate");
   const why = z.string().trim().min(3).max(200).parse(reason);
   return db.transaction(async (tx) => {
     const [before] = await tx

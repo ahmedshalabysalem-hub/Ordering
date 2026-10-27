@@ -1,10 +1,17 @@
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { auth, LOCKED_MESSAGE } from "@/server/auth/auth";
 import { AdminAlreadyExistsError, bootstrapAdmin } from "@/server/auth/bootstrap";
 import { MAX_FAILED_ATTEMPTS } from "@/server/auth/lockout";
+import { resetTestDatabase } from "../helpers/test-db";
 import { sql } from "./helpers/db";
 
 const PASSWORD = "correct-horse-battery";
+
+// The bootstrap refuses once any admin exists, and other suites create admins, so start from an empty
+// database whatever order the files run in.
+beforeAll(async () => {
+  await resetTestDatabase();
+});
 
 afterAll(async () => {
   await sql.end();
