@@ -16,6 +16,7 @@ Requirements: Node 22, pnpm 10, Docker (or a local PostgreSQL 16).
 pnpm install
 cp .env.example .env.local
 docker compose up -d db        # PostgreSQL on localhost:5432 (creates `ordering` and `ordering_test`)
+pnpm db:migrate                 # apply migrations (reads DATABASE_URL from .env.local)
 pnpm dev                       # http://localhost:3000, health check at /api/health
 ```
 
@@ -30,6 +31,6 @@ pnpm dev                       # http://localhost:3000, health check at /api/hea
 | `pnpm test` | Unit tests |
 | `pnpm test:integration` | Integration tests (needs `DATABASE_URL`) |
 | `pnpm test:e2e` | Playwright E2E against the production build (run `pnpm build` first) |
-| `pnpm db:generate` / `pnpm db:migrate` | Create / apply Drizzle migrations |
+| `pnpm db:generate` / `pnpm db:migrate` | Create / apply Drizzle migrations (`drizzle/`) |
 
 See `docs/TESTING.md` for the test strategy.

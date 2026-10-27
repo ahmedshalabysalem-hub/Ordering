@@ -16,4 +16,9 @@ Integration: tables/QR, public menu, order submission, captains, kitchen status,
 E2E: scenarios A–H plus the permanent-QR scenario (ADR-004): one printed QR handles several consecutive sessions.
 
 ## Known limitations
-- No business features yet, so only smoke tests exist (ARCH-002).
+- No business features yet: tests cover the skeleton and database constraints only.
+
+## Database in tests
+- Integration tests run `drizzle/` migrations on `DATABASE_URL` first (`tests/integration/helpers/migrate.ts`).
+- Tests use `inRollback()` so they leave no data behind; tests that need real concurrency commit and clean up after themselves.
+- `tests/integration/schema.test.ts` covers the ADR-007 constraints: unique table numbers and QR tokens, one open session per table (QR token unchanged across sessions), order totals and line totals, unique order refs, atomic order-number allocation under 20 concurrent requests, one current captain assignment, one pending assistance request, refund reasons, insert-only audit log.

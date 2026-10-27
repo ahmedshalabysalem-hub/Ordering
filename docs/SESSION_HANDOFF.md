@@ -2,7 +2,8 @@
 
 _2026-10-27 — Project Director thread_
 
-- State: docs + ARCH-002 skeleton in PR #1 (awaiting CI and user approval). docker-compose.yml not run (no Docker daemon in session).
-- Approved: ADR-000..006. Pending: none.
-- Git: branch `claude/project-thread-vzn3gg` → PR #1 into `main`.
-- Next action: finish ARCH-002, then draft ARCH-003 (data model) as DR-003.
+- State: PR #1 merged. DB-001 (schema + migrations + constraint tests) on branch `claude/project-thread-vzn3gg`, PR pending.
+- Approved: ADR-000..007. Pending: none.
+- Schema: `src/server/db/schema.ts`; migrations in `drizzle/` (0000 init, 0001 audit-log insert-only trigger). Auth tables are not created yet (AUTH-001 maps the auth library onto `users`).
+- Verification: lint, typecheck, unit, integration (constraint tests) run locally against PostgreSQL 16.
+- Next action: ARCH-004 state machines + permission matrix as DR-004, then AUTH-001.
