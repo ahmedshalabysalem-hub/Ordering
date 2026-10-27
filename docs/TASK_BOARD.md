@@ -7,12 +7,12 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 |---|---|---|---|---|---|
 | DOC-001 | Define MVP scope | 1 | DONE | — | ADR-001, ADR-006 |
 | ARCH-001 | Choose stack and hosting | 1 | DONE | — | ADR-005 |
-| ARCH-002 | Skeleton, tooling, Docker, CI | 1 | REVIEW | ARCH-001 | ADR-005, PR #1 |
-| ARCH-003 | Data model design | 1 | READY (draft) | ADR-006 | DR-003 (to raise) |
-| ARCH-004 | State machines + permission matrix | 1 | READY (draft) | ADR-006 | DR-004 (to raise) |
-| DB-001 | Initial migrations | 2 | BACKLOG | ARCH-002, DR-003 | — |
+| ARCH-002 | Skeleton, tooling, Docker, CI | 1 | DONE | ARCH-001 | ADR-005, PR #1 |
+| ARCH-003 | Data model design | 1 | DONE | ADR-006 | ADR-007 |
+| ARCH-004 | State machines + permission matrix | 1 | DONE | ADR-006 | ADR-008 |
+| DB-001 | Initial schema, migrations, constraint tests | 2 | REVIEW | ARCH-002, ADR-007 | — |
 | AUTH-001 | Staff auth, sessions, lockout, admin bootstrap | 2 | BACKLOG | DB-001 | — |
-| AUTH-002 | Server-side RBAC guard | 2 | BACKLOG | AUTH-001, DR-004 | — |
+| AUTH-002 | Server-side RBAC guard | 2 | BACKLOG | AUTH-001 | ADR-008 |
 | TBL-001 | Tables + permanent QR tokens + print cards | 2 | BACKLOG | AUTH-002 | ADR-004 |
 | MENU-001 | Categories + products (AR/EN, images) | 2 | BACKLOG | AUTH-002 | — |
 | MENU-002 | Modifier groups/options | 2 | BACKLOG | MENU-001 | — |

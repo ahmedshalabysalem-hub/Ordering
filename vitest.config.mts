@@ -9,7 +9,13 @@ export default defineConfig({
       { resolve: { alias }, test: { name: "unit", include: ["tests/unit/**/*.test.ts"], environment: "node" } },
       {
         resolve: { alias },
-        test: { name: "integration", include: ["tests/integration/**/*.test.ts"], environment: "node", fileParallelism: false },
+        test: {
+          name: "integration",
+          include: ["tests/integration/**/*.test.ts"],
+          environment: "node",
+          fileParallelism: false,
+          globalSetup: ["tests/integration/helpers/migrate.ts"],
+        },
       },
     ],
   },
