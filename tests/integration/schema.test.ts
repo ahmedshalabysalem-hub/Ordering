@@ -95,14 +95,14 @@ describe("orders", () => {
     });
   });
 
-  it("rejects duplicate order references and duplicate table/date/seq", async () => {
+  it("rejects duplicate order references within a branch and duplicate table/date/seq", async () => {
     await inRollback(async (tx) => {
       const s = await seedSession(tx);
       await insertOrder(tx, s, { seq: 1, ref: "20261027-T012-0001", subtotal: 0, tax: 0, total: 0 });
       await expectViolation(
         tx,
         (sp) => insertOrder(sp, s, { seq: 2, ref: "20261027-T012-0001", subtotal: 0, tax: 0, total: 0 }),
-        "orders_order_ref_uq",
+        "orders_branch_order_ref_uq",
       );
       await expectViolation(
         tx,
