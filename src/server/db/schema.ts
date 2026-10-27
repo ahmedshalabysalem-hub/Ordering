@@ -435,7 +435,8 @@ export const orders = pgTable(
     version: integer("version").notNull().default(1),
   },
   (t) => [
-    uniqueIndex("orders_order_ref_uq").on(t.orderRef),
+    // order_ref is a per-branch daily label (ADR-012); tracking uses tracking_token, never the ref.
+    uniqueIndex("orders_branch_order_ref_uq").on(t.branchId, t.orderRef),
     uniqueIndex("orders_tracking_token_uq").on(t.trackingToken),
     uniqueIndex("orders_table_date_seq_uq").on(t.tableId, t.businessDate, t.seq),
     check("orders_kitchen_status", inList("kitchen_status", KITCHEN_STATUSES)),
