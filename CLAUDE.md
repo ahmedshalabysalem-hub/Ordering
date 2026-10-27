@@ -22,4 +22,4 @@ Conversation history is supplementary; these files win.
 8. Update TASK_BOARD, PROJECT_STATUS and SESSION_HANDOFF when a task changes status.
 
 ## Commands
-To be added once the stack is approved (DR-001).
+See README.md (Commands) and docs/TESTING.md. Before pushing: `pnpm lint && pnpm typecheck && pnpm test`, plus integration/E2E when DB or UI code changes.
