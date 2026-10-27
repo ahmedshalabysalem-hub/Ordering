@@ -260,7 +260,9 @@ export async function createOrder(raw: OrderRequest, idempotencyKey: string): Pr
     const [openSession] = await tx
       .select({ id: tableSessions.id, status: tableSessions.status })
       .from(tableSessions)
-      .where(and(eq(tableSessions.tableId, table.tableId), ne(tableSessions.status, "CLOSED")));
+      .where(and(eq(tableSessions.tableId, table.tableId), ne(tableSessions.status, "CLOSED")))
+      // Waits for a cashier who is closing the session right now, then sees the new status (ORD-002).
+      .for("update");
     if (openSession?.status === "CLOSING") {
       throw new OrderError("SESSION_CLOSING", "This table is being closed. Please ask a member of staff.");
     }

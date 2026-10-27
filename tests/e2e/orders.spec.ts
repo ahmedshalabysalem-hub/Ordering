@@ -72,3 +72,9 @@ test("the order API explains what went wrong", async ({ request }) => {
   expect(injected.status()).toBe(201);
   expect((await injected.json()).totals.subtotalMinor).toBe(1000);
 });
+
+test("table and session staff APIs refuse anonymous callers", async ({ request }) => {
+  expect((await request.get("/api/staff/tables")).status()).toBe(401);
+  const close = await request.post(`/api/staff/sessions/${uuidv7()}/close`, { data: { version: 1 } });
+  expect(close.status()).toBe(401);
+});
