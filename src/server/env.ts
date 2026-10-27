@@ -7,6 +7,8 @@ const envSchema = z.object({
     .refine((v) => v.startsWith("postgres://") || v.startsWith("postgresql://"), {
       message: "DATABASE_URL must be a postgres:// or postgresql:// URL",
     }),
+  BETTER_AUTH_SECRET: z.string().min(32, { message: "BETTER_AUTH_SECRET must be at least 32 characters" }),
+  BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
