@@ -11,8 +11,8 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | ARCH-003 | Data model design | 1 | DONE | ADR-006 | ADR-007 |
 | ARCH-004 | State machines + permission matrix | 1 | DONE | ADR-006 | ADR-008 |
 | DB-001 | Initial schema, migrations, constraint tests | 2 | DONE | ARCH-002, ADR-007 | PR #2 |
-| AUTH-001 | Staff auth, sessions, lockout, admin bootstrap | 2 | REVIEW | DB-001 | ADR-009 |
-| AUTH-002 | Server-side RBAC guard | 2 | BACKLOG | AUTH-001 | ADR-008 |
+| AUTH-001 | Staff auth, sessions, lockout, admin bootstrap | 2 | DONE | DB-001 | ADR-009, PR #3 |
+| AUTH-002 | Server-side RBAC guard | 2 | REVIEW | AUTH-001 | ADR-008 |
 | TBL-001 | Tables + permanent QR tokens + print cards | 2 | BACKLOG | AUTH-002 | ADR-004 |
 | MENU-001 | Categories + products (AR/EN, images) | 2 | BACKLOG | AUTH-002 | — |
 | MENU-002 | Modifier groups/options | 2 | BACKLOG | MENU-001 | — |
@@ -34,3 +34,8 @@ Rows like `UI-001..005` are split into individual tasks when their phase starts.
 - Creating orders, closing orders/sessions or resetting the table never changes the token.
 - Regenerate/revoke exists only as an explicit, audited admin action.
 - Test: the same QR URL places orders across at least 3 consecutive sessions, each with a new order reference and its own tracking token.
+
+## AUTH-002 — how to protect new code
+- Server actions / route handlers: `const staff = await authorize("menu.manage", branchId)`; route handlers wrap with `authErrorResponse(e)` for 401/403 JSON.
+- Pages: `await requirePermission("menu.manage")` (redirects to `/login` or `/forbidden`), inside `<Suspense>`.
+- Permission names and the role map live in `src/server/auth/permissions.ts` (ADR-008). Changing the map is a project-level decision.

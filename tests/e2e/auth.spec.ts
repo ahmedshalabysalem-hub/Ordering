@@ -30,3 +30,20 @@ test("the bootstrapped admin can sign in and out", async ({ page }) => {
   await page.goto("/staff");
   await expect(page).toHaveURL(/\/login$/);
 });
+
+test("the staff API refuses anonymous callers and returns permissions to signed-in staff", async ({ page, request }) => {
+  const anonymous = await request.get("/api/staff/me");
+  expect(anonymous.status()).toBe(401);
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(E2E_ADMIN.email);
+  await page.getByLabel("Password").fill(E2E_ADMIN.password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/staff$/);
+
+  const me = await page.request.get("/api/staff/me");
+  expect(me.status()).toBe(200);
+  const body = await me.json();
+  expect(body.email).toBe(E2E_ADMIN.email);
+  expect(body.permissions).toContain("menu.manage");
+});
