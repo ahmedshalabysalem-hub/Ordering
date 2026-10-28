@@ -21,4 +21,5 @@ _2026-10-28 — Project Director thread_
 - tsconfig target is ES2022 (BigInt literals). If a stale `tsconfig.tsbuildinfo` reports BigInt errors, delete it.
 - Tests: `docs/TESTING.md` has the SPEC §24 coverage map; `tests/e2e/scenarios.spec.ts` runs scenarios A–F and H (table 12; `tables.spec.ts` now uses table 14).
 - Deployment: `Dockerfile` (migrations on start), `docker-compose.prod.yml`, guide in `docs/DEPLOYMENT.md`. Verified locally with Docker on 2026-10-28. In this cloud sandbox Docker Hub was rate-limited, so base images came from `mirror.gcr.io` and the build used the session proxy; neither is needed on a normal server.
+- Windows one-click run (DOC-003): `start.cmd` → `scripts/windows/start.ps1` (Docker check, LAN IP as BETTER_AUTH_URL, random secrets in `.env.production`, compose up with `APP_BIND=0.0.0.0`, health wait, first-admin prompt, opens the browser); `stop.cmd`; guide `docs/RUN_ON_WINDOWS.md` (Arabic). Not executed on Windows from the sandbox.
 - Next action: production deployment when Ahmed picks a server and domain; optional follow-ups are listed in the delivery report §10.

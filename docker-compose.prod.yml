@@ -30,7 +30,8 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL}
     ports:
-      - "127.0.0.1:3000:3000"
+      # 127.0.0.1 behind a reverse proxy; start.cmd sets APP_BIND=0.0.0.0 so phones on the same Wi-Fi can reach it.
+      - "${APP_BIND:-127.0.0.1}:3000:3000"
     volumes:
       - uploads:/app/storage/uploads
 
