@@ -1,4 +1,4 @@
-# Local development database. App deployment config is added in a later task.
+# Local development database. For a production-style stack see docker-compose.prod.yml.
 services:
   db:
     image: postgres:16-alpine
