@@ -78,6 +78,19 @@ test("an order goes from the guest to the kitchen and the cashier, live", async 
   cashier.once("dialog", (d) => d.accept());
   await cashier.getByRole("button", { name: "Close table", exact: true }).click();
   await expect(cashier.getByRole("status")).toContainText(`Not settled yet: ${orderRef} (unpaid)`);
+
+  // 2 × 35.00 + VAT 14% = 79.80, recorded by the cashier; then the table closes and is free again.
+  await card.getByLabel("Method").selectOption({ label: "Card" });
+  await card.getByPlaceholder("Reference (optional)").fill("POS-1234");
+  await card.getByRole("button", { name: "Record payment · EGP 79.80" }).click();
+  await expect(cashier.getByRole("status")).toHaveText("Payment recorded.");
+  await expect(card.getByTestId("payment-status")).toHaveText("paid");
+  cashier.once("dialog", (d) => d.accept());
+  await cashier.getByRole("button", { name: "Close table", exact: true }).click();
+  await expect(cashier.getByRole("status")).toHaveText("Table closed.");
+  await expect(cashier.getByTestId("table-card-77")).toContainText("Available");
+  const [payment] = await sql`select p.amount_minor::int as amount, p.reference, m.code from payments p join payment_methods m on m.id = p.method_id join orders o on o.id = p.order_id where o.order_ref = ${orderRef}`;
+  expect(payment).toEqual({ amount: 7980, reference: "POS-1234", code: "CARD" });
 });
 
 test("assistance requests reach the cashier and are handled once", async ({ page, request }) => {

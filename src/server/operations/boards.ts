@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, gte, inArray, isNull, ne, or, sql } from "drizzle-orm";
-import { branchFor, type StaffUser } from "@/server/auth/permissions";
+import { branchFor, can, type StaffUser } from "@/server/auth/permissions";
 import { db } from "@/server/db/client";
 import {
   assistanceRequests,
@@ -12,6 +12,7 @@ import {
   orderItemModifiers,
   orderItems,
   orders,
+  paymentMethods,
   products,
   tableSessions,
 } from "@/server/db/schema";
@@ -106,11 +107,14 @@ export type CashierBoard = {
   tables: CashierTable[];
   assistance: { id: string; tableNumber: number; status: string; createdAt: string }[];
   captains: { id: string; name: string }[];
+  paymentMethods: { id: string; name: string }[];
+  canRecordPayments: boolean;
+  canRefund: boolean;
 };
 
 export async function getCashierBoard(staff: StaffUser): Promise<CashierBoard> {
   const branchId = branchFor(staff, "orders.view_operational");
-  const [overview, [branch], sessionRows, assistance, captainRows] = await Promise.all([
+  const [overview, [branch], sessionRows, assistance, captainRows, methods] = await Promise.all([
     getTablesOverview(staff),
     db
       .select({ currency: branches.currency, timezone: branches.timezone, sound: branchSettings.newOrderSound })
@@ -132,6 +136,11 @@ export async function getCashierBoard(staff: StaffUser): Promise<CashierBoard> {
       .from(captains)
       .where(and(eq(captains.branchId, branchId), eq(captains.isActive, true)))
       .orderBy(asc(captains.name)),
+    db
+      .select({ id: paymentMethods.id, name: paymentMethods.nameEn })
+      .from(paymentMethods)
+      .where(and(eq(paymentMethods.branchId, branchId), eq(paymentMethods.isActive, true)))
+      .orderBy(asc(paymentMethods.createdAt)),
   ]);
   const sessionIds = sessionRows.map((s) => s.id);
   const live = sessionIds.length ? await boardOrders(and(eq(orders.branchId, branchId), inArray(orders.sessionId, sessionIds))) : [];
@@ -148,6 +157,9 @@ export async function getCashierBoard(staff: StaffUser): Promise<CashierBoard> {
     })),
     assistance: assistance.map((a) => ({ ...a, createdAt: a.createdAt.toISOString() })),
     captains: captainRows,
+    paymentMethods: methods,
+    canRecordPayments: can(staff, "payments.record", branchId),
+    canRefund: can(staff, "payments.refund", branchId),
   };
 }
 
