@@ -2,7 +2,7 @@
 
 _2026-10-28 — Project Director thread_
 
-- State: ADM-001..006 on branch `claude/project-thread-vzn3gg`, PR pending. PAY-001 merged (PR #13). Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.
+- State: TEST-001..003 on branch `claude/project-thread-vzn3gg`, PR pending. ADM-001..006 merged (PR #14). Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.
 - Approved: ADR-000..017. Pending: none. Technical decisions are delegated to the Project Director (record as "APPROVED (delegated)").
 - Menu: `src/server/menu/service.ts` (categories, products, availability; audited; deactivate, never delete), `src/server/money.ts` (decimal text ↔ integer minor units, no floats), `src/server/media/` (image validation by signature, local-disk storage under `UPLOAD_DIR`), `GET /api/media/{file}`. Admin pages under `/admin/menu`.
 - Modifiers: `src/server/menu/modifiers.ts` (groups with min/max choices, options with extra price, product links; audited) and `src/server/menu/selection.ts` (`checkModifierSelection`, pure, for ORD-001 to validate a customer's choices and total the extras). Pages `/admin/menu/options`, `/admin/menu/options/{id}`; product edit page links groups.
@@ -17,6 +17,7 @@ _2026-10-28 — Project Director thread_
 - Payments (ADR-016): `src/server/payments/{service,status}.ts` (`recordPayment`, `recordSessionPayment`, `recordRefund`, `derivePaymentStatus`); controls on the cashier order card and table panel.
 - Admin (ADR-017): services in `src/server/admin/{users,settings,suppliers,history,reports}.ts`; pages under `/admin` (overview, users, settings, suppliers, orders, reports, audit) with a permission-filtered sidebar; CSV at `GET /api/admin/reports/csv`. Shared admin helpers in `src/app/admin/_components/`.
 - E2E note: right after a client-side navigation Next can remount a streamed form once more, undoing a select change made in the first second; open edit pages with `page.goto` in tests.
-- Verification: lint, typecheck, unit (53), integration (90), build and E2E (29) pass locally on `ordering_test`.
+- Verification: lint, typecheck, unit (53), integration (90), build and E2E (32) pass locally on `ordering_test`.
 - tsconfig target is ES2022 (BigInt literals). If a stale `tsconfig.tsbuildinfo` reports BigInt errors, delete it.
-- Next action: TEST-001..003 (SPEC §24 scenarios A–H, permanent QR across sessions, concurrency and authorization suites), then DOC-002.
+- Tests: `docs/TESTING.md` has the SPEC §24 coverage map; `tests/e2e/scenarios.spec.ts` runs scenarios A–F and H (table 12; `tables.spec.ts` now uses table 14).
+- Next action: DOC-002 (setup and deployment docs, delivery report).

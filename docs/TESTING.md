@@ -11,13 +11,37 @@
 - E2E starts `pnpm start` on port 3100 (`E2E_PORT` to change) and reuses a running server locally.
 - CI (`.github/workflows/ci.yml`) runs lint, typecheck, unit, integration, build and E2E on every PR against a PostgreSQL 16 service.
 
-## Required coverage (from `docs/SPEC.md` §24)
-Unit: order numbering, money/tax, modifier validation, permissions, state transitions, idempotency.
-Integration: tables/QR, public menu, order submission, captains, kitchen status, payments, session close, assistance, authz, concurrency.
-E2E: scenarios A–H plus the permanent-QR scenario (ADR-004): one printed QR handles several consecutive sessions.
+## Coverage map (SPEC §24, TEST-001..003)
+| SPEC item | Where it is tested |
+|---|---|
+| Order number generation | `unit/pricing.test.ts`, `integration/schema.test.ts` (gap-free counters under 20 concurrent requests), `integration/orders.test.ts` (20 concurrent orders on one table) |
+| Money, tax, service | `unit/money.test.ts`, `unit/pricing.test.ts`, `integration/admin.test.ts` (settings in basis points used by new orders) |
+| Modifier validation | `unit/selection.test.ts`, `integration/modifiers.test.ts` |
+| Roles and permissions | `unit/permissions.test.ts`, `integration/authorization.test.ts`, every service test (403 for the wrong role), `e2e/scenarios.spec.ts` (Scenario F), `e2e/admin.spec.ts` |
+| Order, session and payment transitions | `integration/operations.test.ts`, `integration/sessions.test.ts`, `unit/payment-status.test.ts`, `integration/payments.test.ts` |
+| Idempotency | `integration/orders.test.ts` (5 parallel retries, one order), `e2e/orders.spec.ts` (Scenario G) |
+| Tables and permanent QR | `integration/tables.test.ts`, `integration/orders.test.ts` (one QR across 3 consecutive sessions), `e2e/tables.spec.ts`, `e2e/scenarios.spec.ts` (new session and reference after closing) |
+| Public menu, submit, items and options | `integration/customer.test.ts`, `integration/orders.test.ts`, `e2e/customer.spec.ts` |
+| Captains, kitchen status, payments, close, assistance | `integration/operations.test.ts`, `integration/payments.test.ts`, `integration/sessions.test.ts`, `integration/customer.test.ts` |
+| Concurrency | two kitchen moves, two assistance handlers, two payments, two closes, close vs new order, two admins demoting each other (integration); two cashiers on one table over HTTP (`e2e/scenarios.spec.ts`, Scenario H) |
+| Real-time | `integration/realtime.test.ts`, `e2e/realtime.spec.ts`, and the live updates asserted in scenarios A–E |
+| Reports and history | `integration/admin.test.ts`, `e2e/admin.spec.ts` |
 
-## Known limitations
-- No business features yet: tests cover the skeleton and database constraints only.
+**E2E scenarios** (`tests/e2e/scenarios.spec.ts`) run SPEC §24.3 in one browser session per role:
+- **A–E as one journey.**
+  - The admin creates table 12, and the guest orders in Arabic from its QR link, signed out.
+  - The kitchen accepts, prepares and readies the order. The cashier and the guest see each change live.
+  - The cashier assigns a captain and marks the order served.
+  - The guest asks for help, and staff acknowledge and resolve it.
+  - Cash payment, then the table closes and becomes available.
+  - The order appears in history with its payment and captain.
+  - The same QR code then starts a new session with a new reference.
+- **F.** Signed-out and kitchen users are refused admin pages and APIs, a guessed order reference opens nothing, and a manipulated price is ignored.
+- **H.** Two parallel "start closing" requests on one table get one `200` and one `409` with a clear message.
+- **G** is in `orders.spec.ts`.
+
+## External services
+None are needed. Payments are recorded manually (ADR-016), and there is no email or SMS, so every test runs locally and in CI.
 
 ## Database in tests
 - Integration and E2E runs reset the test database and apply `drizzle/` migrations first (`tests/helpers/test-db.ts`). E2E then creates an admin with the real `pnpm admin:bootstrap` command.
