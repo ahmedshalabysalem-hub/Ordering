@@ -69,6 +69,7 @@ Changing `number` is allowed; orders snapshot the table number they were placed 
 | Table | Key columns | Notes |
 |---|---|---|
 | captains | id, branch_id, name, phone, user_id (nullable), is_active | `user_id` nullable: captains don't log in in the MVP but can later |
+| chefs | id, branch_id, name, phone, is_active | ADR-018. Referenced by `orders.chef_id` (nullable for orders before ADR-018) |
 | captain_assignments | id, order_id, captain_id, assigned_by, assigned_at, unassigned_at | Current = row with `unassigned_at IS NULL`; partial unique index enforces one current per order. History kept |
 | payments | id, order_id, method_id, amount_minor, currency, kind, recorded_by, recorded_at, reference, reason | kind ∈ PAYMENT, REFUND. `amount_minor > 0`. Never updated or deleted; corrections are new rows. `orders.paid_minor` and `payment_status` updated in the same transaction |
 | assistance_requests | id, branch_id, table_id, session_id, status, created_at, acknowledged_by/at, resolved_by/at | status ∈ PENDING, ACKNOWLEDGED, RESOLVED, CANCELLED. Partial unique: one PENDING per table (dedup) |

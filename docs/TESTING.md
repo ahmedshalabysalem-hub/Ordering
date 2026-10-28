@@ -22,7 +22,7 @@
 | Idempotency | `integration/orders.test.ts` (5 parallel retries, one order), `e2e/orders.spec.ts` (Scenario G) |
 | Tables and permanent QR | `integration/tables.test.ts`, `integration/orders.test.ts` (one QR across 3 consecutive sessions), `e2e/tables.spec.ts`, `e2e/scenarios.spec.ts` (new session and reference after closing) |
 | Public menu, submit, items and options | `integration/customer.test.ts`, `integration/orders.test.ts`, `e2e/customer.spec.ts` |
-| Captains, kitchen status, payments, close, assistance | `integration/operations.test.ts`, `integration/payments.test.ts`, `integration/sessions.test.ts`, `integration/customer.test.ts` |
+| Captains, responsible chef (ADR-018), kitchen status, payments, close, assistance | `integration/operations.test.ts`, `integration/payments.test.ts`, `integration/sessions.test.ts`, `integration/customer.test.ts` |
 | Concurrency | two kitchen moves, two assistance handlers, two payments, two closes, close vs new order, two admins demoting each other (integration); two cashiers on one table over HTTP (`e2e/scenarios.spec.ts`, Scenario H) |
 | Real-time | `integration/realtime.test.ts`, `e2e/realtime.spec.ts`, and the live updates asserted in scenarios A–E |
 | Reports and history | `integration/admin.test.ts`, `e2e/admin.spec.ts` |

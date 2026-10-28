@@ -430,6 +430,9 @@ export const orders = pgTable(
     paidMinor: money("paid_minor").notNull().default(0),
     customerNote: text("customer_note"),
     cancelReason: text("cancel_reason"),
+    // Chef responsible in the kitchen (ADR-018). Required by the service before an order leaves NEW;
+    // nullable because orders placed before ADR-018 have none.
+    chefId: uuid("chef_id").references(() => chefs.id),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     version: integer("version").notNull().default(1),
@@ -453,6 +456,7 @@ export const orders = pgTable(
     check("orders_seq_positive", sql`${t.seq} > 0`),
     index("orders_branch_date_idx").on(t.branchId, t.businessDate),
     index("orders_session_idx").on(t.sessionId),
+    index("orders_chef_idx").on(t.chefId),
     index("orders_active_kitchen_idx")
       .on(t.branchId, t.kitchenStatus)
       .where(sql`${t.kitchenStatus} in ('NEW', 'ACCEPTED', 'IN_PREPARATION', 'READY')`),
@@ -556,6 +560,24 @@ export const captains = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [index("captains_branch_idx").on(t.branchId)],
+);
+
+// Chefs the kitchen picks as responsible for an order (ADR-018). No chef login; deactivated, never
+// deleted, so past orders keep their chef's name.
+export const chefs = pgTable(
+  "chefs",
+  {
+    id: id(),
+    branchId: uuid("branch_id")
+      .notNull()
+      .references(() => branches.id),
+    name: text("name").notNull(),
+    phone: text("phone"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("chefs_branch_idx").on(t.branchId)],
 );
 
 export const captainAssignments = pgTable(

@@ -103,6 +103,8 @@ export type Report = {
   categories: { name: string; quantity: number; revenueMinor: number }[];
   timing: { prepOrders: number; avgPrepSeconds: number | null; completedOrders: number; avgCompletionSeconds: number | null };
   captains: { name: string; assigned: number; delivered: number; avgDeliverySeconds: number | null }[];
+  /** Orders per responsible chef (ADR-018); prep time is placed → ready. Cancelled orders are left out. */
+  chefs: { name: string; orders: number; ready: number; avgPrepSeconds: number | null }[];
   cancelled: { orderRef: string; tableNumber: number; reason: string | null; totalMinor: number; createdAt: Date }[];
 };
 
@@ -149,7 +151,7 @@ export async function getReport(staff: StaffUser, requested: Partial<ReportRange
     coalesce(sum(ref), 0)::bigint as refunds,
     coalesce(sum(greatest(total_minor - (pay - ref), 0)) filter (where kitchen_status <> 'CANCELLED'), 0)::bigint as outstanding`;
 
-  const [totals, daily, byTable, byStatus, byMethod, topProducts, categories, timing, captains, cancelled] = await Promise.all([
+  const [totals, daily, byTable, byStatus, byMethod, topProducts, categories, timing, captains, chefRows, cancelled] = await Promise.all([
     db.execute(sql`select ${moneyColumns} from (${orderMoney}) m`),
     db.execute(sql`select to_char(business_date, 'YYYY-MM-DD') as date, ${moneyColumns} from (${orderMoney}) m group by business_date order by business_date`),
     db.execute(sql`
@@ -190,6 +192,13 @@ export async function getReport(staff: StaffUser, requested: Partial<ReportRange
       where ${inRange} and a.unassigned_at is null
       group by c.name order by assigned desc`),
     db.execute(sql`
+      select c.name, count(*) as orders, count(r.at) as ready, round(avg(extract(epoch from r.at - o.created_at))) as avg_prep
+      from orders o
+      join chefs c on c.id = o.chef_id
+      left join lateral (select min(e.created_at) as at from order_events e where e.order_id = o.id and e.type = 'KITCHEN_STATUS' and e.to_status = 'READY') r on true
+      where ${inRange} and ${live}
+      group by c.id, c.name order by count(*) desc, c.name`),
+    db.execute(sql`
       select o.order_ref, o.table_number_snapshot as table_number, o.cancel_reason as reason, o.total_minor as total, o.created_at
       from orders o where ${inRange} and o.kitchen_status = 'CANCELLED' order by o.created_at desc limit 200`),
   ]);
@@ -222,6 +231,7 @@ export async function getReport(staff: StaffUser, requested: Partial<ReportRange
       avgCompletionSeconds: seconds(t.avg_completion),
     },
     captains: captains.map((r) => ({ name: String(r.name), assigned: int(r.assigned), delivered: int(r.delivered), avgDeliverySeconds: seconds(r.avg_delivery) })),
+    chefs: chefRows.map((r) => ({ name: String(r.name), orders: int(r.orders), ready: int(r.ready), avgPrepSeconds: seconds(r.avg_prep) })),
     cancelled: cancelled.map((r) => ({
       orderRef: String(r.order_ref),
       tableNumber: int(r.table_number),
@@ -232,7 +242,7 @@ export async function getReport(staff: StaffUser, requested: Partial<ReportRange
   };
 }
 
-export const REPORT_SECTIONS = ["daily", "tables", "status", "payment-methods", "products", "categories", "captains", "cancelled"] as const;
+export const REPORT_SECTIONS = ["daily", "tables", "status", "payment-methods", "products", "categories", "captains", "chefs", "cancelled"] as const;
 export type ReportSection = (typeof REPORT_SECTIONS)[number];
 
 /** CSV for one report section. Money columns are plain decimals in the branch currency. */
@@ -256,6 +266,8 @@ export function reportCsv(report: Report, section: ReportSection, money: (minor:
         return [["category", "quantity", "revenue"], ...report.categories.map((r) => [r.name, r.quantity, money(r.revenueMinor)])];
       case "captains":
         return [["captain", "assigned", "delivered", "avg_delivery_seconds"], ...report.captains.map((r) => [r.name, r.assigned, r.delivered, r.avgDeliverySeconds ?? ""])];
+      case "chefs":
+        return [["chef", "orders", "ready", "avg_prep_seconds"], ...report.chefs.map((r) => [r.name, r.orders, r.ready, r.avgPrepSeconds ?? ""])];
       case "cancelled":
         return [["order_ref", "table", "reason", "order_total", "created_at"], ...report.cancelled.map((r) => [r.orderRef, r.tableNumber, r.reason ?? "", money(r.totalMinor), r.createdAt.toISOString()])];
     }

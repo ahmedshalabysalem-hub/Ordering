@@ -231,6 +231,11 @@ function OrderCard({ order: o, board, now, money, action }: { order: BoardOrder;
           {KITCHEN_LABEL[o.kitchenStatus] ?? o.kitchenStatus}
         </span>
         <span className="rounded bg-zinc-200 px-2 py-0.5">{o.deliveryStatus === "DELIVERED" ? "Served" : o.captain ? `Captain: ${o.captain.name}` : "Not assigned"}</span>
+        {o.chef ? (
+          <span className="rounded bg-orange-100 px-2 py-0.5" data-testid="order-chef">
+            Chef: {o.chef.name}
+          </span>
+        ) : null}
         <span className={`rounded px-2 py-0.5 ${o.paymentStatus === "PAID" ? "bg-emerald-200" : "bg-amber-200"}`} data-testid="payment-status">
           {o.paymentStatus.replace("_", " ").toLowerCase()}
         </span>

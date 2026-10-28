@@ -29,6 +29,13 @@
       "when": 1793114203582,
       "tag": "0003_order_ref_per_branch",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793198752851,
+      "tag": "0004_chefs",
+      "breakpoints": true
     }
   ]
 }

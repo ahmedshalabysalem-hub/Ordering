@@ -59,7 +59,9 @@ describe("reports (ADM-005)", () => {
     await cancelOrder(cashier, cancelled.orderId, 1, "Customer left");
     await recordPayment(cashier, refunded.orderId, 1, s.cash, 1000);
     await recordRefund(admin, refunded.orderId, 2, s.cash, 400, "Cold tea");
-    await moveKitchenStatus(kitchen, unpaid.orderId, 1, "ACCEPTED");
+    const chefId = uuidv7();
+    await sql`insert into chefs (id, branch_id, name) values (${chefId}, ${s.branchId}, 'Hassan')`;
+    await moveKitchenStatus(kitchen, unpaid.orderId, 1, "ACCEPTED", chefId);
     await moveKitchenStatus(kitchen, unpaid.orderId, 2, "IN_PREPARATION");
     await moveKitchenStatus(kitchen, unpaid.orderId, 3, "READY");
 
@@ -84,6 +86,11 @@ describe("reports (ADM-005)", () => {
     expect(r.byTable).toEqual([{ tableNumber: 4, orders: 3, totalMinor: 9100 }]);
     expect(r.timing.prepOrders).toBe(1);
     expect(r.cancelled).toMatchObject([{ reason: "Customer left", totalMinor: 1000 }]);
+    expect(r.chefs).toEqual([{ name: "Hassan", orders: 1, ready: 1, avgPrepSeconds: expect.any(Number) }]);
+    expect(reportCsv(r, "chefs", (m) => minorToDecimal(m, "EGP")).split("\r\n")[0]).toBe("chef,orders,ready,avg_prep_seconds");
+    expect((await listOrderHistory(admin, {})).rows.find((o) => o.id === unpaid.orderId)?.chef).toBe("Hassan");
+    expect((await getOrderDetail(admin, unpaid.orderId))?.chef).toBe("Hassan");
+    expect((await getOrderDetail(admin, paid.orderId))?.chef).toBeNull();
 
     const csv = reportCsv(r, "daily", (m) => minorToDecimal(m, "EGP"));
     expect(csv.split("\r\n")[1]).toMatch(/,4,1,91\.00,0\.00,0\.00,0\.00,91\.00,61\.00,4\.00,57\.00,34\.00$/);
