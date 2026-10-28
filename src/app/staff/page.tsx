@@ -24,7 +24,7 @@ async function SignedInStaff() {
       <p className="text-zinc-600">
         {staff.email} · {staff.roles.map((r) => r.role).join(", ") || "no role assigned"}
       </p>
-      <nav className="flex gap-4">
+      <nav className="flex flex-wrap justify-center gap-4">
         {can(staff, "tables.manage") && (
           <Link href="/admin/tables" className="underline">
             Tables &amp; QR codes
@@ -33,6 +33,21 @@ async function SignedInStaff() {
         {can(staff, "menu.manage") && (
           <Link href="/admin/menu" className="underline">
             Menu
+          </Link>
+        )}
+        {can(staff, "captains.manage") && (
+          <Link href="/admin/captains" className="underline">
+            Captains
+          </Link>
+        )}
+        {can(staff, "orders.view_operational") && (
+          <Link href="/staff/cashier" className="underline">
+            Cashier
+          </Link>
+        )}
+        {can(staff, "kitchen.view") && (
+          <Link href="/staff/kitchen" className="underline">
+            Kitchen
           </Link>
         )}
       </nav>
