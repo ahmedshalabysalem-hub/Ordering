@@ -66,6 +66,7 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
                 <th className="py-2 pe-3 text-start">Table</th>
                 <th className="py-2 pe-3 text-start">Placed</th>
                 <th className="py-2 pe-3 text-start">Kitchen</th>
+                <th className="py-2 pe-3 text-start">Chef</th>
                 <th className="py-2 pe-3 text-start">Delivery</th>
                 <th className="py-2 pe-3 text-start">Payment</th>
                 <th className="py-2 pe-3 text-end">Total</th>
@@ -82,6 +83,7 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
                   <td className="py-1.5 pe-3">{o.tableNumber}</td>
                   <td className="py-1.5 pe-3">{dateTime(o.createdAt, h.timezone)}</td>
                   <td className="py-1.5 pe-3">{o.kitchenStatus}</td>
+                  <td className="py-1.5 pe-3">{o.chef ?? "—"}</td>
                   <td className="py-1.5 pe-3">{o.deliveryStatus}</td>
                   <td className="py-1.5 pe-3">{o.paymentStatus}</td>
                   <td className="py-1.5 pe-3 text-end tabular-nums">{formatMoney(o.totalMinor, h.currency)}</td>

@@ -46,6 +46,8 @@ async function Detail({ params }: { params: PageProps<"/admin/orders/[id]">["par
         <dd>{o.deliveryStatus}</dd>
         <dt className="text-zinc-600">Payment</dt>
         <dd>{o.paymentStatus}</dd>
+        <dt className="text-zinc-600">Chef</dt>
+        <dd>{d.chef ?? "—"}</dd>
         <dt className="text-zinc-600">Paid (net)</dt>
         <dd className="tabular-nums">{m(o.paidMinor)}</dd>
       </dl>

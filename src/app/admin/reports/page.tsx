@@ -252,6 +252,29 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
         </table>
       </Section>
 
+      <Section title="Chefs" section="chefs" range={r.range} empty={r.chefs.length === 0}>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-zinc-600">
+              <th className={th}>Chef</th>
+              <th className={th}>Orders</th>
+              <th className={th}>Ready</th>
+              <th className={th}>Average placed → ready</th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.chefs.map((c) => (
+              <tr key={c.name} className="border-b">
+                <td className={td}>{c.name}</td>
+                <td className={td}>{c.orders}</td>
+                <td className={td}>{c.ready}</td>
+                <td className={td}>{duration(c.avgPrepSeconds)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Section>
+
       <Section title="Cancelled orders" section="cancelled" range={r.range} empty={r.cancelled.length === 0}>
         <table className="w-full text-sm">
           <thead>

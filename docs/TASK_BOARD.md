@@ -39,7 +39,8 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | TEST-001..003 | E2E A–H + permanent-QR scenario, concurrency, authz suite, coverage map | 6 | DONE (PR #15) | 3, 4, 5 | ADR-004 |
 | DOC-002 | Setup/deploy docs (Dockerfile, production compose, backups) + delivery report | 7 | DONE (PR #16) | TEST-* | — |
 | DOC-003 | Windows one-click start (start.cmd/stop.cmd) and Arabic run guide | 7 | DONE (PR #17) | DOC-002 | ADR-005 |
-| UI-006 | Customer menu opens on a category grid; a category shows only its products (back button, `?c=` in the URL) | 8 | REVIEW | UI-001 | ADR-013 |
+| UI-006 | Customer menu opens on a category grid; a category shows only its products (back button, `?c=` in the URL) | 8 | DONE (PR #18) | UI-001 | ADR-013 |
+| OPS-005 | Responsible chef: admin chefs list; kitchen must pick a chef before an order leaves NEW; chef on cashier, history, reports | 8 | REVIEW | OPS-002 | ADR-018 |
 
 Rows like `UI-001..005` are split into individual tasks when their phase starts.
 

@@ -13,6 +13,7 @@ export const PERMISSIONS = [
   "users.manage",
   "roles.assign",
   "captains.manage",
+  "chefs.manage",
   "suppliers.manage",
   "settings.manage",
   "audit.view",

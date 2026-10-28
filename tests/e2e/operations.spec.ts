@@ -37,6 +37,10 @@ test("an order goes from the guest to the kitchen and the cashier, live", async 
   await page.getByLabel("Name").first().fill("Mona");
   await page.getByRole("button", { name: "Add captain" }).click();
   await expect(page.getByRole("button", { name: "Save Mona" })).toBeVisible();
+  await page.goto("/admin/chefs");
+  await page.getByLabel("Name").first().fill("Chef Ali");
+  await page.getByRole("button", { name: "Add chef" }).click();
+  await expect(page.getByRole("button", { name: "Save Chef Ali" })).toBeVisible();
 
   await page.goto("/staff/kitchen");
   await expect(page.getByRole("heading", { name: "Kitchen" })).toBeVisible();
@@ -58,13 +62,19 @@ test("an order goes from the guest to the kitchen and the cashier, live", async 
   await expect(ticket).toContainText("Warm please");
   await expect(cashier.getByTestId("table-card-77")).toContainText("New order", { timeout: 8_000 });
 
+  // ADR-018: no move out of NEW until a responsible chef is picked.
+  await expect(ticket.getByRole("button", { name: "Start preparing" })).toBeDisabled();
+  await expect(ticket.getByRole("button", { name: "Accept" })).toBeDisabled();
+  await ticket.getByLabel("Chef responsible").selectOption({ label: "Chef Ali" });
   await ticket.getByRole("button", { name: "Start preparing" }).click();
   await expect(cashier.getByTestId("table-card-77")).toContainText("In preparation", { timeout: 8_000 });
+  await expect(ticket).toContainText("Chef: Chef Ali");
   await ticket.getByRole("button", { name: "Ready" }).click();
   await expect(cashier.getByTestId("table-card-77")).toContainText("Ready", { timeout: 8_000 });
 
   await cashier.getByTestId("table-card-77").click();
   const card = cashier.getByTestId("cashier-order").filter({ hasText: orderRef });
+  await expect(card.getByTestId("order-chef")).toHaveText("Chef: Chef Ali");
   await card.getByLabel(`Captain for ${orderRef}`).selectOption({ label: "Mona" });
   await expect(cashier.getByRole("status")).toHaveText("Captain assigned.");
   await card.getByRole("button", { name: "Mark served" }).click();

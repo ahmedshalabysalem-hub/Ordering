@@ -2,6 +2,8 @@
 
 _2026-10-28 — Project Director thread_
 
+- OPS-005 (2026-10-28, branch `claude/project-thread-cqd84n`, ADR-018): `chefs` table + nullable `orders.chef_id` (migration `0004_chefs`, additive; applied on start by the Docker image). `moveKitchenStatus(staff, id, version, to, chefId?)` refuses ACCEPTED/IN_PREPARATION without a chef; the chef can be set or changed only from NEW/ACCEPTED and must be active in the branch. Service `src/server/operations/chefs.ts`, admin `/admin/chefs` (`chefs.manage`, admin only). Chef on kitchen tickets, cashier order card (`data-testid="order-chef"`), order history list/detail, report section "Chefs" + CSV `section=chefs`. Verified locally: lint, typecheck, unit, integration (95), build, E2E (32).
+
 - UI-006 (2026-10-28, branch `claude/project-thread-y7ml63`): the customer menu (`MenuView` in `src/app/order/table/[token]/ordering-app.tsx`) opens on a 2-column category grid (cover = first product image in the category, else the first letter). Tapping a category sets `?c={categoryId}` with `history.pushState`, so the phone back button returns to the grid; inside a category a back button and category chips switch views. A menu with one category skips the grid. No schema or API change. E2E helpers now tap the category before adding products.
 
 - State: DOC-002 on branch `claude/project-thread-vzn3gg`, PR pending. TEST-001..003 merged (PR #15). After DOC-002 the MVP in SPEC §30 is complete; see `docs/DELIVERY_REPORT.md` for limitations and follow-ups. Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.

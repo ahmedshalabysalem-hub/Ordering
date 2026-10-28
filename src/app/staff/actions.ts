@@ -31,8 +31,8 @@ async function run(fn: (staff: NonNullable<Awaited<ReturnType<typeof getCurrentS
   }
 }
 
-export const kitchenMove = async (orderId: string, version: number, to: KitchenStatus) =>
-  run((s) => moveKitchenStatus(s, orderId, version, to), "Updated.");
+export const kitchenMove = async (orderId: string, version: number, to: KitchenStatus, chefId?: string | null) =>
+  run((s) => moveKitchenStatus(s, orderId, version, to, chefId), "Updated.");
 
 export const cancelOrderAction = async (orderId: string, version: number, reason: string) =>
   run((s) => cancelOrder(s, orderId, version, reason), "Order cancelled.");

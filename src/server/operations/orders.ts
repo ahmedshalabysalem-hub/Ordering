@@ -3,7 +3,7 @@ import { v7 as uuidv7 } from "uuid";
 import { writeAudit } from "@/server/audit";
 import { AuthError, branchFor, can, type Permission, type StaffUser } from "@/server/auth/permissions";
 import { db } from "@/server/db/client";
-import { captainAssignments, captains, orderEvents, orders } from "@/server/db/schema";
+import { captainAssignments, captains, chefs, orderEvents, orders } from "@/server/db/schema";
 import { publish } from "@/server/realtime/events";
 
 // Staff transitions on one order (OPS-001..003, ADR-008 §1–2, ADR-015). Each runs in a transaction,
@@ -61,15 +61,42 @@ async function finish(tx: Tx, order: OrderRow, changes: Partial<OrderRow>, event
   return row;
 }
 
-/** Kitchen moves: NEW → ACCEPTED → IN_PREPARATION → READY (NEW → IN_PREPARATION allowed). */
-export async function moveKitchenStatus(staff: StaffUser, orderId: string, version: number, to: KitchenStatus): Promise<OrderRow> {
+/** Statuses in which the kitchen picks (or changes) the responsible chef (ADR-018). */
+const CHEF_PICK_FROM = ["NEW", "ACCEPTED"];
+
+/**
+ * Kitchen moves: NEW → ACCEPTED → IN_PREPARATION → READY (NEW → IN_PREPARATION allowed).
+ * ADR-018: leaving NEW, and starting preparation, need a responsible chef. `chefId` sets or changes
+ * it on a move out of NEW or ACCEPTED and must be an active chef of the branch.
+ */
+export async function moveKitchenStatus(staff: StaffUser, orderId: string, version: number, to: KitchenStatus, chefId?: string | null): Promise<OrderRow> {
   const branchId = branchFor(staff, "kitchen.transition");
   return db.transaction(async (tx) => {
     const order = await lockOrder(tx, branchId, orderId, version);
     if (!KITCHEN_FROM[to].includes(order.kitchenStatus)) {
       throw new OperationError("WRONG_STATUS", `This order is ${order.kitchenStatus.toLowerCase().replace("_", " ")}.`);
     }
-    return finish(tx, order, { kitchenStatus: to }, { type: "KITCHEN_STATUS", from: order.kitchenStatus, to, actor: staff.id });
+    const changes: Partial<OrderRow> = { kitchenStatus: to };
+    let chef: { id: string; name: string } | null = null;
+    if (chefId) {
+      if (!CHEF_PICK_FROM.includes(order.kitchenStatus)) throw new OperationError("WRONG_STATUS", "The chef can only be chosen before preparation starts.");
+      const [row] = await tx
+        .select({ id: chefs.id, name: chefs.name, isActive: chefs.isActive })
+        .from(chefs)
+        .where(and(eq(chefs.id, chefId), eq(chefs.branchId, branchId)));
+      if (!row || !row.isActive) throw new OperationError("INVALID", "Choose an active chef.");
+      chef = { id: row.id, name: row.name };
+      changes.chefId = row.id;
+    } else if (to !== "READY" && !order.chefId) {
+      throw new OperationError("INVALID", "Choose the chef responsible for this order first.");
+    }
+    return finish(tx, order, changes, {
+      type: "KITCHEN_STATUS",
+      from: order.kitchenStatus,
+      to,
+      actor: staff.id,
+      data: chef ? { chefId: chef.id, chefName: chef.name, previousChefId: order.chefId } : undefined,
+    });
   });
 }
 

@@ -6,13 +6,13 @@ const staff = (...roles: StaffUser["roles"]): StaffUser => ({ id: "u", name: "U"
 
 describe("permission matrix (ADR-008)", () => {
   it("gives admins every management permission", () => {
-    for (const p of ["menu.manage", "users.manage", "roles.assign", "payments.refund", "qr.regenerate"] as const) {
+    for (const p of ["menu.manage", "users.manage", "roles.assign", "payments.refund", "qr.regenerate", "chefs.manage"] as const) {
       expect(hasPermission(["ADMIN"], p)).toBe(true);
     }
   });
 
   it("keeps kitchen staff away from prices, accounts and money (Scenario F)", () => {
-    for (const p of ["menu.manage", "users.manage", "roles.assign", "payments.record", "session.close"] as const) {
+    for (const p of ["menu.manage", "users.manage", "roles.assign", "payments.record", "session.close", "chefs.manage"] as const) {
       expect(hasPermission(["KITCHEN"], p)).toBe(false);
     }
     expect(hasPermission(["KITCHEN"], "kitchen.transition")).toBe(true);
@@ -20,7 +20,7 @@ describe("permission matrix (ADR-008)", () => {
   });
 
   it("lets cashiers run the floor but not administer (Scenario F)", () => {
-    for (const p of ["users.manage", "roles.assign", "settings.manage", "menu.manage", "payments.refund"] as const) {
+    for (const p of ["users.manage", "roles.assign", "settings.manage", "menu.manage", "payments.refund", "chefs.manage"] as const) {
       expect(hasPermission(["CASHIER"], p)).toBe(false);
     }
     for (const p of ["payments.record", "captain.assign", "session.close", "assistance.handle"] as const) {

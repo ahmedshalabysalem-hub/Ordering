@@ -8,8 +8,8 @@ Every transition runs on the server in a transaction, checks the role, uses `ver
 | From | To | Who | Notes |
 |---|---|---|---|
 | — | NEW | Customer (public submit) | Created with the order |
-| NEW | ACCEPTED | KITCHEN, ADMIN | Stops the cashier "new order" animation |
-| NEW, ACCEPTED | IN_PREPARATION | KITCHEN, ADMIN | NEW → IN_PREPARATION allowed (UI may merge the two steps) |
+| NEW | ACCEPTED | KITCHEN, ADMIN | Stops the cashier "new order" animation. Needs a responsible chef (ADR-018) |
+| NEW, ACCEPTED | IN_PREPARATION | KITCHEN, ADMIN | NEW → IN_PREPARATION allowed (UI may merge the two steps). Needs a responsible chef (ADR-018) |
 | IN_PREPARATION | READY | KITCHEN, ADMIN | READY only from IN_PREPARATION |
 | NEW, ACCEPTED | CANCELLED | CASHIER, ADMIN | Reason required; audited |
 | IN_PREPARATION, READY | CANCELLED | ADMIN | Reason required; audited |

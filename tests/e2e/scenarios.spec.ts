@@ -19,6 +19,7 @@ test.beforeAll(async () => {
             (${uuidv7()}, ${branch.id}, ${categoryId}, 'شاي نعناع', 'Mint tea', 2000),
             (${uuidv7()}, ${branch.id}, ${categoryId}, 'بسبوسة', 'Basbousa', 3000)`;
   await sql`insert into captains (id, branch_id, name) values (${uuidv7()}, ${branch.id}, 'Karim')`;
+  await sql`insert into chefs (id, branch_id, name) values (${uuidv7()}, ${branch.id}, 'Samir')`;
 });
 
 test.afterAll(async () => {
@@ -90,6 +91,7 @@ test("scenarios A–E: a table's full journey from QR code to closing", async ({
   });
 
   await test.step("B: the kitchen accepts, prepares and readies the order; everyone sees it live", async () => {
+    await ticket().getByLabel("Chef responsible").selectOption({ label: "Samir" });
     await ticket().getByRole("button", { name: "Accept" }).click();
     await expect(guestPage.getByTestId("order-status")).toHaveText("تم القبول", { timeout: 8_000 });
     await ticket().getByRole("button", { name: "Start preparing" }).click();
@@ -143,6 +145,7 @@ test("scenarios A–E: a table's full journey from QR code to closing", async ({
     await expect(admin.getByRole("heading", { name: `Order ${orderRef}` })).toBeVisible();
     await expect(admin.getByText(/Payment EGP\s57\.00 by Cash/)).toBeVisible();
     await expect(admin.getByText(/^Karim:/)).toBeVisible();
+    await expect(admin.locator("dd", { hasText: "Samir" })).toBeVisible();
     await expect(admin.getByText(/DELIVERED/).first()).toBeVisible();
 
     // The printed QR code still works for the next guests and starts a new session and reference.

@@ -6,6 +6,7 @@ import { requestAssistance } from "@/server/customer/assistance";
 import { handleAssistance } from "@/server/operations/assistance";
 import { getCashierBoard, getKitchenBoard } from "@/server/operations/boards";
 import { createCaptain, updateCaptain } from "@/server/operations/captains";
+import { createChef, listChefs, updateChef } from "@/server/operations/chefs";
 import { assignCaptain, cancelOrder, markDelivered, moveKitchenStatus, OperationError } from "@/server/operations/orders";
 import { createOrder } from "@/server/orders/create";
 import { sql } from "./helpers/db";
@@ -27,6 +28,8 @@ async function seed() {
   await sql`insert into dining_tables (id, branch_id, number, qr_token) values (${tableId}, ${branchId}, 4, ${qrToken})`;
   await sql`insert into menu_categories (id, branch_id, name_ar, name_en) values (${categoryId}, ${branchId}, 'م', 'Drinks')`;
   await sql`insert into products (id, branch_id, category_id, name_ar, name_en, price_minor) values (${productId}, ${branchId}, ${categoryId}, 'شاي', 'Tea', 1500)`;
+  const chefId = uuidv7();
+  await sql`insert into chefs (id, branch_id, name) values (${chefId}, ${branchId}, 'Hassan')`;
   const staff = async (role: Role): Promise<StaffUser> => {
     const userId = uuidv7();
     await sql`insert into users (id, name, email) values (${userId}, 'Staff', ${`o-${userId}@example.com`})`;
@@ -38,7 +41,7 @@ async function seed() {
     return placed.orderId;
   };
   const version = async (orderId: string) => (await sql`select version from orders where id = ${orderId}`)[0].version as number;
-  return { branchId, tableId, qrToken, staff, order, version };
+  return { branchId, tableId, qrToken, chefId, staff, order, version };
 }
 
 describe("kitchen moves (OPS-002, ADR-008 §1)", () => {
@@ -46,7 +49,7 @@ describe("kitchen moves (OPS-002, ADR-008 §1)", () => {
     const s = await seed();
     const kitchen = await s.staff("KITCHEN");
     const id = await s.order();
-    await moveKitchenStatus(kitchen, id, 1, "ACCEPTED");
+    await moveKitchenStatus(kitchen, id, 1, "ACCEPTED", s.chefId);
     await expect(moveKitchenStatus(kitchen, id, 1, "IN_PREPARATION")).rejects.toMatchObject({ code: "CONFLICT" });
     await expect(moveKitchenStatus(kitchen, id, 2, "READY")).rejects.toMatchObject({ code: "WRONG_STATUS" });
     await moveKitchenStatus(kitchen, id, 2, "IN_PREPARATION");
@@ -60,9 +63,82 @@ describe("kitchen moves (OPS-002, ADR-008 §1)", () => {
     const s = await seed();
     const [a, b, cashier] = [await s.staff("KITCHEN"), await s.staff("KITCHEN"), await s.staff("CASHIER")];
     const id = await s.order();
-    const results = await Promise.allSettled([moveKitchenStatus(a, id, 1, "IN_PREPARATION"), moveKitchenStatus(b, id, 1, "IN_PREPARATION")]);
+    const results = await Promise.allSettled([moveKitchenStatus(a, id, 1, "IN_PREPARATION", s.chefId), moveKitchenStatus(b, id, 1, "IN_PREPARATION", s.chefId)]);
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
     await expect(moveKitchenStatus(cashier, id, 2, "READY")).rejects.toThrow(AuthError);
+  });
+});
+
+describe("responsible chef (OPS-005, ADR-018)", () => {
+  it("refuses to leave NEW or start preparing without a chef, then records the chosen one", async () => {
+    const s = await seed();
+    const kitchen = await s.staff("KITCHEN");
+    const id = await s.order();
+    for (const to of ["ACCEPTED", "IN_PREPARATION"] as const) {
+      await expect(moveKitchenStatus(kitchen, id, 1, to)).rejects.toMatchObject({ code: "INVALID" });
+      await expect(moveKitchenStatus(kitchen, id, 1, to, null)).rejects.toMatchObject({ code: "INVALID" });
+    }
+    expect((await sql`select kitchen_status, chef_id, version from orders where id = ${id}`)[0]).toMatchObject({ kitchen_status: "NEW", chef_id: null, version: 1 });
+    expect(await moveKitchenStatus(kitchen, id, 1, "ACCEPTED", s.chefId)).toMatchObject({ kitchenStatus: "ACCEPTED", chefId: s.chefId });
+    // The chef stays with the order, so later moves need no new pick.
+    await moveKitchenStatus(kitchen, id, 2, "IN_PREPARATION");
+    await moveKitchenStatus(kitchen, id, 3, "READY");
+    const [event] = await sql`select data from order_events where order_id = ${id} and to_status = 'ACCEPTED'`;
+    expect(event.data).toMatchObject({ chefId: s.chefId, chefName: "Hassan", previousChefId: null });
+    const board = await getKitchenBoard(kitchen);
+    expect(board.chefs).toEqual([{ id: s.chefId, name: "Hassan" }]);
+    expect(board.tickets.find((t) => t.id === id)?.chef).toEqual({ id: s.chefId, name: "Hassan" });
+  });
+
+  it("accepts only an active chef of the same branch, and changes the chef only before preparation", async () => {
+    const s = await seed();
+    const other = await seed();
+    const [kitchen, admin] = [await s.staff("KITCHEN"), await s.staff("ADMIN")];
+    const id = await s.order();
+    await expect(moveKitchenStatus(kitchen, id, 1, "ACCEPTED", other.chefId)).rejects.toMatchObject({ code: "INVALID" });
+    await expect(moveKitchenStatus(kitchen, id, 1, "ACCEPTED", uuidv7())).rejects.toMatchObject({ code: "INVALID" });
+    const mona = await createChef(admin, { name: "Mona" });
+    await updateChef(admin, mona.id, { name: "Mona", isActive: false });
+    await expect(moveKitchenStatus(kitchen, id, 1, "ACCEPTED", mona.id)).rejects.toMatchObject({ code: "INVALID" });
+    await moveKitchenStatus(kitchen, id, 1, "ACCEPTED", s.chefId);
+    // Changing the chef on the way to preparation is allowed while ACCEPTED.
+    await updateChef(admin, mona.id, { name: "Mona", isActive: true });
+    expect(await moveKitchenStatus(kitchen, id, 2, "IN_PREPARATION", mona.id)).toMatchObject({ chefId: mona.id });
+    await expect(moveKitchenStatus(kitchen, id, 3, "READY", s.chefId)).rejects.toMatchObject({ code: "WRONG_STATUS" });
+    expect((await sql`select chef_id, kitchen_status from orders where id = ${id}`)[0]).toMatchObject({ chef_id: mona.id, kitchen_status: "IN_PREPARATION" });
+  });
+
+  it("keeps orders from before the rule valid: a preparing order without a chef can still be readied", async () => {
+    const s = await seed();
+    const kitchen = await s.staff("KITCHEN");
+    const id = await s.order();
+    await sql`update orders set kitchen_status = 'IN_PREPARATION' where id = ${id}`;
+    expect(await moveKitchenStatus(kitchen, id, 1, "READY")).toMatchObject({ kitchenStatus: "READY", chefId: null });
+  });
+
+  it("lets only admins manage chefs, with an audit trail", async () => {
+    const s = await seed();
+    const [admin, cashier, kitchen] = [await s.staff("ADMIN"), await s.staff("CASHIER"), await s.staff("KITCHEN")];
+    const chef = await createChef(admin, { name: "  Ali ", phone: "" });
+    expect(chef).toMatchObject({ name: "Ali", phone: null, isActive: true });
+    await expect(createChef(admin, { name: " " })).rejects.toThrow();
+    await expect(createChef(cashier, { name: "X" })).rejects.toThrow(AuthError);
+    await expect(createChef(kitchen, { name: "X" })).rejects.toThrow(AuthError);
+    await expect(updateChef(kitchen, chef.id, { name: "X" })).rejects.toThrow(AuthError);
+    await expect(updateChef(admin, uuidv7(), { name: "X" })).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect((await listChefs(admin)).map((c) => c.name)).toEqual(["Ali", "Hassan"]);
+    const audits = await sql`select action from audit_logs where entity_id = ${chef.id}`;
+    expect(audits.map((a) => a.action)).toEqual(["CHEF_CREATED"]);
+  });
+
+  it("shows the chef on the cashier screen", async () => {
+    const s = await seed();
+    const [kitchen, cashier] = [await s.staff("KITCHEN"), await s.staff("CASHIER")];
+    const id = await s.order();
+    await moveKitchenStatus(kitchen, id, 1, "IN_PREPARATION", s.chefId);
+    const board = await getCashierBoard(cashier);
+    const order = board.tables.flatMap((t) => t.orders).find((o) => o.id === id);
+    expect(order?.chef).toEqual({ id: s.chefId, name: "Hassan" });
   });
 });
 
@@ -75,7 +151,7 @@ describe("cancelling (ADR-008 §1)", () => {
     expect(await cancelOrder(cashier, early, 1, "Customer left")).toMatchObject({ kitchenStatus: "CANCELLED", cancelReason: "Customer left" });
 
     const late = await s.order();
-    await moveKitchenStatus(kitchen, late, 1, "IN_PREPARATION");
+    await moveKitchenStatus(kitchen, late, 1, "IN_PREPARATION", s.chefId);
     await expect(cancelOrder(cashier, late, 2, "Too slow")).rejects.toThrow(AuthError);
     await cancelOrder(admin, late, 2, "Wrong table");
     const audits = await sql`select action, reason from audit_logs where entity_id in (${early}, ${late}) order by created_at, id`;
@@ -119,7 +195,7 @@ describe("captains and serving (OPS-003, ADR-008 §2, ADR-015)", () => {
     const [cashier, kitchen] = [await s.staff("CASHIER"), await s.staff("KITCHEN")];
     const id = await s.order();
     await expect(markDelivered(cashier, id, 1)).rejects.toMatchObject({ code: "WRONG_STATUS" });
-    await moveKitchenStatus(kitchen, id, 1, "IN_PREPARATION");
+    await moveKitchenStatus(kitchen, id, 1, "IN_PREPARATION", s.chefId);
     await moveKitchenStatus(kitchen, id, 2, "READY");
     expect(await markDelivered(cashier, id, 3)).toMatchObject({ deliveryStatus: "DELIVERED" });
     await expect(markDelivered(cashier, id, 4)).rejects.toMatchObject({ code: "WRONG_STATUS" });

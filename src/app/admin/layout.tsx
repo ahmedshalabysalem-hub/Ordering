@@ -13,6 +13,7 @@ const LINKS: { href: string; label: string; permission: Permission }[] = [
   { href: "/admin/menu/options", label: "Product options", permission: "menu.manage" },
   { href: "/admin/orders", label: "Orders", permission: "orders.history_recent" },
   { href: "/admin/captains", label: "Captains", permission: "captains.manage" },
+  { href: "/admin/chefs", label: "Chefs", permission: "chefs.manage" },
   { href: "/admin/suppliers", label: "Suppliers", permission: "suppliers.manage" },
   { href: "/admin/users", label: "Users & roles", permission: "users.manage" },
   { href: "/admin/reports", label: "Reports", permission: "reports.view_operational" },

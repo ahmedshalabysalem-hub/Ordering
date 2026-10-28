@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import { AuthError, can, type StaffUser } from "@/server/auth/permissions";
 import { db } from "@/server/db/client";
-import { auditLogs, branches, captainAssignments, captains, orderEvents, orderItemModifiers, orderItems, orders, paymentMethods, payments, users } from "@/server/db/schema";
+import { auditLogs, branches, captainAssignments, captains, chefs, orderEvents, orderItemModifiers, orderItems, orders, paymentMethods, payments, users } from "@/server/db/schema";
 import { OPERATIONAL_DAYS, resolveRange, type ReportRange } from "./reports";
 
 // Order history and the audit log viewer (ADM-004, ADM-006, ADR-017). Admins see all history; cashiers
@@ -36,6 +36,7 @@ export type HistoryRow = {
   paymentStatus: string;
   totalMinor: number;
   paidMinor: number;
+  chef: string | null;
 };
 
 export async function listOrderHistory(staff: StaffUser, filter: HistoryFilter) {
@@ -65,8 +66,10 @@ export async function listOrderHistory(staff: StaffUser, filter: HistoryFilter) 
         paymentStatus: orders.paymentStatus,
         totalMinor: orders.totalMinor,
         paidMinor: orders.paidMinor,
+        chef: chefs.name,
       })
       .from(orders)
+      .leftJoin(chefs, eq(chefs.id, orders.chefId))
       .where(and(...where))
       .orderBy(desc(orders.createdAt))
       .limit(PAGE_SIZE)
@@ -89,7 +92,7 @@ export async function getOrderDetail(staff: StaffUser, orderId: string) {
     if (resolveRange({ from: order.businessDate, to: order.businessDate }, t, false).from !== order.businessDate) return null;
   }
   const items = await db.select().from(orderItems).where(eq(orderItems.orderId, orderId)).orderBy(asc(orderItems.id));
-  const [modifiers, events, paymentRows, assignments] = await Promise.all([
+  const [modifiers, events, paymentRows, assignments, chef] = await Promise.all([
     items.length
       ? db
           .select()
@@ -120,6 +123,7 @@ export async function getOrderDetail(staff: StaffUser, orderId: string) {
       .innerJoin(captains, eq(captains.id, captainAssignments.captainId))
       .where(eq(captainAssignments.orderId, orderId))
       .orderBy(asc(captainAssignments.assignedAt)),
+    order.chefId ? db.select({ name: chefs.name }).from(chefs).where(eq(chefs.id, order.chefId)) : Promise.resolve([]),
   ]);
   return {
     order,
@@ -128,6 +132,7 @@ export async function getOrderDetail(staff: StaffUser, orderId: string) {
     events,
     payments: paymentRows,
     assignments,
+    chef: chef[0]?.name ?? null,
   };
 }
 

@@ -7,6 +7,7 @@ import {
   branchSettings,
   captainAssignments,
   captains,
+  chefs,
   diningTables,
   menuCategories,
   orderItemModifiers,
@@ -38,6 +39,7 @@ export type BoardOrder = {
   customerNote: string | null;
   cancelReason: string | null;
   captain: { id: string; name: string } | null;
+  chef: { id: string; name: string } | null;
   items: BoardItem[];
 };
 
@@ -72,14 +74,15 @@ async function itemsFor(orderIds: string[]): Promise<Map<string, BoardItem[]>> {
 
 async function boardOrders(where: ReturnType<typeof and>, order: "asc" | "desc" = "asc"): Promise<BoardOrder[]> {
   const rows = await db
-    .select({ order: orders, captainId: captains.id, captainName: captains.name })
+    .select({ order: orders, captainId: captains.id, captainName: captains.name, chefName: chefs.name })
     .from(orders)
     .leftJoin(captainAssignments, and(eq(captainAssignments.orderId, orders.id), isNull(captainAssignments.unassignedAt)))
     .leftJoin(captains, eq(captains.id, captainAssignments.captainId))
+    .leftJoin(chefs, eq(chefs.id, orders.chefId))
     .where(where)
     .orderBy(order === "asc" ? asc(orders.createdAt) : desc(orders.createdAt));
   const items = await itemsFor(rows.map((r) => r.order.id));
-  return rows.map(({ order: o, captainId, captainName }) => ({
+  return rows.map(({ order: o, captainId, captainName, chefName }) => ({
     id: o.id,
     sessionId: o.sessionId,
     orderRef: o.orderRef,
@@ -94,6 +97,7 @@ async function boardOrders(where: ReturnType<typeof and>, order: "asc" | "desc" 
     customerNote: o.customerNote,
     cancelReason: o.cancelReason,
     captain: captainId && captainName ? { id: captainId, name: captainName } : null,
+    chef: o.chefId && chefName ? { id: o.chefId, name: chefName } : null,
     items: items.get(o.id) ?? [],
   }));
 }
@@ -167,12 +171,14 @@ export type KitchenBoard = {
   warnMinutes: number;
   overdueMinutes: number;
   tickets: BoardOrder[];
+  /** Active chefs to pick from before an order leaves NEW (ADR-018). */
+  chefs: { id: string; name: string }[];
   products: { id: string; name: string; category: string; isAvailable: boolean }[];
 };
 
 export async function getKitchenBoard(staff: StaffUser): Promise<KitchenBoard> {
   const branchId = branchFor(staff, "kitchen.view");
-  const [[settings], productRows] = await Promise.all([
+  const [[settings], productRows, chefRows] = await Promise.all([
     db.select().from(branchSettings).where(eq(branchSettings.branchId, branchId)),
     db
       .select({ id: products.id, name: products.nameEn, category: menuCategories.nameEn, isAvailable: products.isAvailable })
@@ -180,6 +186,11 @@ export async function getKitchenBoard(staff: StaffUser): Promise<KitchenBoard> {
       .innerJoin(menuCategories, eq(menuCategories.id, products.categoryId))
       .where(and(eq(products.branchId, branchId), eq(products.isActive, true)))
       .orderBy(asc(menuCategories.sortOrder), asc(products.sortOrder), asc(products.nameEn)),
+    db
+      .select({ id: chefs.id, name: chefs.name })
+      .from(chefs)
+      .where(and(eq(chefs.branchId, branchId), eq(chefs.isActive, true)))
+      .orderBy(asc(chefs.name)),
   ]);
   // Active tickets, plus ready ones still waiting to be served from the last 12 hours.
   const tickets = await boardOrders(
@@ -195,6 +206,7 @@ export async function getKitchenBoard(staff: StaffUser): Promise<KitchenBoard> {
     warnMinutes: settings?.prepWarnMinutes ?? 10,
     overdueMinutes: settings?.prepOverdueMinutes ?? 20,
     tickets,
+    chefs: chefRows,
     products: productRows,
   };
 }
