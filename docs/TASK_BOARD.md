@@ -18,7 +18,7 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | MENU-002 | Modifier groups/options | 2 | DONE (PR #7) | MENU-001 | — |
 | ORD-001 | Order creation: pricing, snapshots, idempotency, session open + atomic numbering | 2 | DONE (PR #8) | MENU-002, TBL-001 | ADR-012 |
 | ORD-002 | Table session lifecycle (closing/close with version check) + cashier table overview | 2 | DONE (PR #9) | ORD-001 | ADR-008 |
-| AUD-001 | Audit log | 2 | BACKLOG | DB-001 | — |
+| AUD-001 | Audit log | 2 | DONE (written by every service since PR #3) | DB-001 | ADR-007 |
 | UI-001 | Customer menu page (categories, products, images, sold out, options) | 3 | DONE (PR #10) | ORD-002 | ADR-013 |
 | UI-002 | Arabic/English with RTL, language kept in a cookie, field fallback | 3 | DONE (PR #10) | UI-001 | ADR-013 |
 | UI-003 | Cart (localStorage, quantities, notes, other-table warning) | 3 | DONE (PR #10) | UI-001 | ADR-013 |
@@ -29,8 +29,13 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | OPS-002 | Kitchen display: tickets, status moves, age alerts, sold-out switches | 4 | DONE (PR #12) | RT-001 | ADR-015 |
 | OPS-003 | Captains: admin list, assign/reassign/unassign, mark served | 4 | DONE (PR #12) | OPS-001 | ADR-015 |
 | OPS-004 | Assistance handling (acknowledge, resolve) | 4 | DONE (PR #12) | OPS-001 | ADR-015 |
-| PAY-001 | Manual payment recording, pay whole table, admin refunds | 4 | REVIEW | ORD-002 | ADR-016 |
-| ADM-001..005 | Users, suppliers, settings, reports, audit view | 5 | BACKLOG | AUTH-002 | — |
+| PAY-001 | Manual payment recording, pay whole table, admin refunds | 4 | DONE (PR #13) | ORD-002 | ADR-016 |
+| ADM-001 | Users and roles: create, role, deactivate, reset password, last-admin guard | 5 | REVIEW | AUTH-002 | ADR-017 |
+| ADM-002 | Settings: restaurant, logo, time zone, currency, languages, tax, service, kitchen times, close policy, payment methods | 5 | REVIEW | AUTH-002 | ADR-017 |
+| ADM-003 | Suppliers | 5 | REVIEW | AUTH-002 | ADR-017 |
+| ADM-004 | Order history with detail (admin all, cashier 7 days) and admin overview | 5 | REVIEW | PAY-001 | ADR-017 |
+| ADM-005 | Reports (SPEC §22) with date filters and CSV | 5 | REVIEW | PAY-001 | ADR-017 |
+| ADM-006 | Audit log viewer (read-only) | 5 | REVIEW | AUD-001 | ADR-017 |
 | TEST-001..003 | E2E A–H + permanent-QR scenario, concurrency, authz suite | 6 | BACKLOG | 3, 4, 5 | ADR-004 |
 | DOC-002 | Setup/deploy docs + delivery report | 7 | BACKLOG | TEST-* | — |
 

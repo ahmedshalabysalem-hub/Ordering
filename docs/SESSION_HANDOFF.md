@@ -2,8 +2,8 @@
 
 _2026-10-28 — Project Director thread_
 
-- State: PAY-001 on branch `claude/project-thread-vzn3gg`, PR pending. OPS-001..004 merged (PR #12). Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.
-- Approved: ADR-000..016. Pending: none. Technical decisions are delegated to the Project Director (record as "APPROVED (delegated)").
+- State: ADM-001..006 on branch `claude/project-thread-vzn3gg`, PR pending. PAY-001 merged (PR #13). Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.
+- Approved: ADR-000..017. Pending: none. Technical decisions are delegated to the Project Director (record as "APPROVED (delegated)").
 - Menu: `src/server/menu/service.ts` (categories, products, availability; audited; deactivate, never delete), `src/server/money.ts` (decimal text ↔ integer minor units, no floats), `src/server/media/` (image validation by signature, local-disk storage under `UPLOAD_DIR`), `GET /api/media/{file}`. Admin pages under `/admin/menu`.
 - Modifiers: `src/server/menu/modifiers.ts` (groups with min/max choices, options with extra price, product links; audited) and `src/server/menu/selection.ts` (`checkModifierSelection`, pure, for ORD-001 to validate a customer's choices and total the extras). Pages `/admin/menu/options`, `/admin/menu/options/{id}`; product edit page links groups.
 - Orders (ADR-012): `src/server/orders/pricing.ts` (pure integer pricing), `create.ts` (`quoteOrder`, `createOrder`: table row lock, idempotency per table, session open, daily number, snapshots, `PRICES_CHANGED` guard), public routes `POST /api/public/orders/quote` and `POST /api/public/orders` (needs `Idempotency-Key`), in-memory rate limit `src/server/rate-limit.ts`. Migration 0003 makes `order_ref` unique per branch.
@@ -15,6 +15,8 @@ _2026-10-28 — Project Director thread_
 - Real-time (ADR-014): call `publish(tx, event)` from `src/server/realtime/events.ts` inside every transaction that changes orders, sessions or assistance (pg_notify, delivered on commit). `hub.ts` = one LISTEN per process; `sse.ts` builds SSE responses. Streams: `GET /api/staff/events` (branch-scoped), `GET /api/public/orders/{trackingToken}/events`. Client hook `useLiveRefresh(url, onEvent?)` in `src/app/_components/use-live-refresh.ts` (router.refresh on event/reconnect, polling fallback).
 - Operations (ADR-015): `src/server/operations/{orders,assistance,captains,boards}.ts`; server actions in `src/app/staff/actions.ts`; screens `/staff/cashier`, `/staff/kitchen`, admin `/admin/captains`. Staff screens use `LiveStatus` (`src/app/staff/_components/live-status.tsx`) for the live stream and `useStaffAction` for actions.
 - Payments (ADR-016): `src/server/payments/{service,status}.ts` (`recordPayment`, `recordSessionPayment`, `recordRefund`, `derivePaymentStatus`); controls on the cashier order card and table panel.
-- Verification: lint, typecheck, unit (53), integration (80), build and E2E (27) pass locally on `ordering_test`.
+- Admin (ADR-017): services in `src/server/admin/{users,settings,suppliers,history,reports}.ts`; pages under `/admin` (overview, users, settings, suppliers, orders, reports, audit) with a permission-filtered sidebar; CSV at `GET /api/admin/reports/csv`. Shared admin helpers in `src/app/admin/_components/`.
+- E2E note: right after a client-side navigation Next can remount a streamed form once more, undoing a select change made in the first second; open edit pages with `page.goto` in tests.
+- Verification: lint, typecheck, unit (53), integration (90), build and E2E (29) pass locally on `ordering_test`.
 - tsconfig target is ES2022 (BigInt literals). If a stale `tsconfig.tsbuildinfo` reports BigInt errors, delete it.
-- Next action: ADM-001..005 (users and roles, settings incl. tax/currency/payment methods, suppliers, reports, audit log view).
+- Next action: TEST-001..003 (SPEC §24 scenarios A–H, permanent QR across sessions, concurrency and authorization suites), then DOC-002.
