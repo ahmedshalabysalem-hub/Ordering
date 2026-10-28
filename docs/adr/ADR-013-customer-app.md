@@ -51,7 +51,7 @@ SPEC §6 and §7.1 ask for a public, mobile-first ordering page per table QR cod
 - **Access:** only the 32-character random tracking token gives access. The table number, order reference and order ID give none.
   - The page is `noindex` and sends `Referrer-Policy: no-referrer`.
   - It shows no staff names, internal notes or other orders.
-- The page refreshes itself every 15 seconds while the order is not final. RT-001 replaces this with server-sent events and keeps polling as the fallback.
+- The page refreshes itself every 15 seconds while the order is not final. RT-001 replaced this with server-sent events and kept polling as the fallback (ADR-014).
 
 ### Assistance (UI-005)
 - `POST /api/public/assistance` with `{ qrToken }` runs `requestAssistance`, which locks the table row and then:

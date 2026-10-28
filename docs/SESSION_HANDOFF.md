@@ -2,8 +2,8 @@
 
 _2026-10-28 — Project Director thread_
 
-- State: UI-001..005 on branch `claude/project-thread-vzn3gg`, PR pending. ORD-002 merged (PR #9).
-- Approved: ADR-000..013. Pending: none. Technical decisions are delegated to the Project Director (record as "APPROVED (delegated)").
+- State: RT-001 on branch `claude/project-thread-vzn3gg`, PR pending. UI-001..005 merged (PR #10).
+- Approved: ADR-000..014. Pending: none. Technical decisions are delegated to the Project Director (record as "APPROVED (delegated)").
 - Menu: `src/server/menu/service.ts` (categories, products, availability; audited; deactivate, never delete), `src/server/money.ts` (decimal text ↔ integer minor units, no floats), `src/server/media/` (image validation by signature, local-disk storage under `UPLOAD_DIR`), `GET /api/media/{file}`. Admin pages under `/admin/menu`.
 - Modifiers: `src/server/menu/modifiers.ts` (groups with min/max choices, options with extra price, product links; audited) and `src/server/menu/selection.ts` (`checkModifierSelection`, pure, for ORD-001 to validate a customer's choices and total the extras). Pages `/admin/menu/options`, `/admin/menu/options/{id}`; product edit page links groups.
 - Orders (ADR-012): `src/server/orders/pricing.ts` (pure integer pricing), `create.ts` (`quoteOrder`, `createOrder`: table row lock, idempotency per table, session open, daily number, snapshots, `PRICES_CHANGED` guard), public routes `POST /api/public/orders/quote` and `POST /api/public/orders` (needs `Idempotency-Key`), in-memory rate limit `src/server/rate-limit.ts`. Migration 0003 makes `order_ref` unique per branch.
@@ -11,7 +11,8 @@ _2026-10-28 — Project Director thread_
 - Staff permission helper: `branchFor(staff, permission)` in `permissions.ts` returns the branch where the permission is held (used by tables and menu services).
 - Staff forms use `useKeptForm` (`src/app/_components/use-kept-form.ts`) so a server-side validation error keeps what was typed.
 - Notes: dynamic pages stream inside `<Suspense>`, so an unknown QR token renders the not-found page with HTTP 200. Next keeps the previous route mounted but hidden; in E2E prefer `getByRole` over `getByLabel` after client navigation, and wait for the new page's heading after clicking a link.
-- Customer app (ADR-013): `/order/table/{qrToken}` (menu, product sheet, cart, checkout) and `/order/track/{trackingToken}` (receipt + status, refreshes every 15 s until final). Server: `src/server/customer/{menu,tracking,assistance,status}.ts`; `POST /api/public/assistance`. Client code in `src/app/order/` (`_lib/cart.ts` pure cart logic, `_lib/storage.ts` localStorage, `_lib/api.ts`, `_components/`). Strings in `src/i18n/{en,ar}.ts` (same keys, checked by a unit test); language in the `lang` cookie, default from `branches.default_language`. `/order/*` sends `Referrer-Policy: no-referrer`.
-- Verification: lint, typecheck, unit (48), integration (65), build and E2E (22) pass locally on `ordering_test`.
+- Customer app (ADR-013): `/order/table/{qrToken}` (menu, product sheet, cart, checkout) and `/order/track/{trackingToken}` (receipt + status, live via SSE until final). Server: `src/server/customer/{menu,tracking,assistance,status}.ts`; `POST /api/public/assistance`. Client code in `src/app/order/` (`_lib/cart.ts` pure cart logic, `_lib/storage.ts` localStorage, `_lib/api.ts`, `_components/`). Strings in `src/i18n/{en,ar}.ts` (same keys, checked by a unit test); language in the `lang` cookie, default from `branches.default_language`. `/order/*` sends `Referrer-Policy: no-referrer`.
+- Real-time (ADR-014): call `publish(tx, event)` from `src/server/realtime/events.ts` inside every transaction that changes orders, sessions or assistance (pg_notify, delivered on commit). `hub.ts` = one LISTEN per process; `sse.ts` builds SSE responses. Streams: `GET /api/staff/events` (branch-scoped), `GET /api/public/orders/{trackingToken}/events`. Client hook `useLiveRefresh(url, onEvent?)` in `src/app/_components/use-live-refresh.ts` (router.refresh on event/reconnect, polling fallback).
+- Verification: lint, typecheck, unit (48), integration (67), build and E2E (24) pass locally on `ordering_test`.
 - tsconfig target is ES2022 (BigInt literals). If a stale `tsconfig.tsbuildinfo` reports BigInt errors, delete it.
-- Next action: RT-001 real-time (SSE + LISTEN/NOTIFY after commit, polling fallback), then OPS screens.
+- Next action: OPS-001..004 (cashier grid, kitchen screen, captains/delivery, session close, assistance handling) using `useLiveRefresh("/api/staff/events")`.

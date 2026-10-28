@@ -5,7 +5,7 @@ import { isFinal } from "@/server/customer/status";
 import { getTrackedOrder } from "@/server/customer/tracking";
 import { LangProvider } from "../../_components/lang";
 import { customerLang } from "../../_lib/server-lang";
-import { AutoRefresh } from "./auto-refresh";
+import { LiveOrder } from "./live-order";
 import { TrackingView } from "./tracking-view";
 
 export const metadata: Metadata = { title: "Order", robots: { index: false, follow: false } };
@@ -28,7 +28,7 @@ async function TrackedOrder({ params }: { params: PageProps<"/order/track/[token
   return (
     <LangProvider initial={await customerLang("ar")}>
       <TrackingView order={order} trackingToken={token} />
-      {isFinal(order) ? null : <AutoRefresh seconds={15} />}
+      {isFinal(order) ? null : <LiveOrder trackingToken={token} />}
     </LangProvider>
   );
 }

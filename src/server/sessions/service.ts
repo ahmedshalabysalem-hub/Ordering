@@ -3,6 +3,7 @@ import { writeAudit } from "@/server/audit";
 import { branchFor, type StaffUser } from "@/server/auth/permissions";
 import { db } from "@/server/db/client";
 import { assistanceRequests, branchSettings, diningTables, orders, tableSessions } from "@/server/db/schema";
+import { publish } from "@/server/realtime/events";
 
 // Table session lifecycle (ORD-002, ADR-008 §4). Sessions open with the first customer order
 // (ORD-001). Staff move them OPEN → CLOSING → CLOSED; every move checks `version` so two cashiers
@@ -66,6 +67,7 @@ async function moveSession(
       before: { status: session.status },
       after: { status: to },
     });
+    await publish(tx, { type: "session.updated", branchId, sessionId, tableId: session.tableId });
     return row;
   });
 }
@@ -147,6 +149,8 @@ export async function closeSession(staff: StaffUser, sessionId: string, version:
       before: { status: session.status },
       after: { status: "CLOSED", orders: sessionOrders.length, assistanceClosed: open.length },
     });
+    await publish(tx, { type: "session.updated", branchId, sessionId, tableId: session.tableId });
+    if (open.length > 0) await publish(tx, { type: "assistance.updated", branchId, tableId: session.tableId });
     return row;
   });
 }

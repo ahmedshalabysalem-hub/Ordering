@@ -102,3 +102,10 @@ export async function getTrackedOrder(trackingToken: string): Promise<TrackedOrd
     })),
   };
 }
+
+/** The order behind a tracking token, for the customer's live-update stream. */
+export async function findTrackedOrderId(trackingToken: string): Promise<string | null> {
+  if (!TRACKING_TOKEN.test(trackingToken)) return null;
+  const [row] = await db.select({ id: orders.id }).from(orders).where(eq(orders.trackingToken, trackingToken));
+  return row?.id ?? null;
+}

@@ -93,9 +93,10 @@ test("a guest orders in Arabic and English, with options, and tracks the order",
   const [saved] = await sql`select customer_note, total_minor::int as total from orders where order_ref = ${orderRef}`;
   expect(saved).toEqual({ customer_note: "By the window", total: 7524 });
 
-  // Status changes reach the open page.
-  await sql`update orders set kitchen_status = 'IN_PREPARATION' where order_ref = ${orderRef}`;
-  await expect(page.getByTestId("order-status")).toHaveText("Being prepared", { timeout: 25_000 });
+  // A status change reaches the open page through the live stream, well before the 15 s polling fallback.
+  const [{ id: orderId, branch_id: branchId }] = await sql`update orders set kitchen_status = 'IN_PREPARATION' where order_ref = ${orderRef} returning id, branch_id`;
+  await sql`select pg_notify('ordering_events', ${JSON.stringify({ type: "order.updated", branchId, orderId })})`;
+  await expect(page.getByTestId("order-status")).toHaveText("Being prepared", { timeout: 5_000 });
 
   await page.getByRole("link", { name: "Back to the menu" }).click();
   await expect(page.getByTestId("table-number")).toHaveText("Table 41");

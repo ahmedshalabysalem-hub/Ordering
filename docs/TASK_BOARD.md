@@ -19,12 +19,12 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | ORD-001 | Order creation: pricing, snapshots, idempotency, session open + atomic numbering | 2 | DONE (PR #8) | MENU-002, TBL-001 | ADR-012 |
 | ORD-002 | Table session lifecycle (closing/close with version check) + cashier table overview | 2 | DONE (PR #9) | ORD-001 | ADR-008 |
 | AUD-001 | Audit log | 2 | BACKLOG | DB-001 | — |
-| UI-001 | Customer menu page (categories, products, images, sold out, options) | 3 | REVIEW | ORD-002 | ADR-013 |
-| UI-002 | Arabic/English with RTL, language kept in a cookie, field fallback | 3 | REVIEW | UI-001 | ADR-013 |
-| UI-003 | Cart (localStorage, quantities, notes, other-table warning) | 3 | REVIEW | UI-001 | ADR-013 |
-| UI-004 | Checkout: server quote, idempotent submit, price-change confirmation | 3 | REVIEW | UI-003, ORD-001 | ADR-012, ADR-013 |
-| UI-005 | Order confirmation and tracking by token, assistance request | 3 | REVIEW | UI-004 | ADR-013 |
-| RT-001 | Real-time (SSE + NOTIFY) with fallback | 4 | BACKLOG | ORD-001 | — |
+| UI-001 | Customer menu page (categories, products, images, sold out, options) | 3 | DONE (PR #10) | ORD-002 | ADR-013 |
+| UI-002 | Arabic/English with RTL, language kept in a cookie, field fallback | 3 | DONE (PR #10) | UI-001 | ADR-013 |
+| UI-003 | Cart (localStorage, quantities, notes, other-table warning) | 3 | DONE (PR #10) | UI-001 | ADR-013 |
+| UI-004 | Checkout: server quote, idempotent submit, price-change confirmation | 3 | DONE (PR #10) | UI-003, ORD-001 | ADR-012, ADR-013 |
+| UI-005 | Order confirmation and tracking by token, assistance request | 3 | DONE (PR #10) | UI-004 | ADR-013 |
+| RT-001 | Real-time (SSE + NOTIFY) with fallback | 4 | REVIEW | ORD-001 | ADR-014 |
 | OPS-001..004 | Cashier grid, KDS, captains/delivery, session close | 4 | BACKLOG | RT-001 | — |
 | PAY-001 | Manual payment recording | 4 | BACKLOG | ORD-002 | — |
 | ADM-001..005 | Users, suppliers, settings, reports, audit view | 5 | BACKLOG | AUTH-002 | — |
