@@ -31,7 +31,7 @@ SPEC §15 asks for screens to update without a refresh. It also requires:
 - If the app is scaled to several instances, every instance listens, so nothing changes.
 
 ### Streams (Server-Sent Events)
-- **`GET /api/staff/events`** is for signed-in staff with `orders.view_operational`.
+- **`GET /api/staff/events`** is for signed-in staff with `orders.view_operational` or `kitchen.view`.
   - It receives every event for the branch where the staff member holds that permission.
   - A stream lives at most 10 minutes. The browser then reconnects and is authorized again, so a disabled account loses access within minutes.
 - **`GET /api/public/orders/{trackingToken}/events`** is for customers.
