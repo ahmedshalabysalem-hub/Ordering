@@ -21,6 +21,7 @@ import {
   taxRates,
 } from "@/server/db/schema";
 import { checkModifierSelection, type SelectableGroup, type SelectionProblem } from "@/server/menu/selection";
+import { publish } from "@/server/realtime/events";
 import { lineTotalMinor, type OrderTotals, priceOrder } from "./pricing";
 
 // Customer order creation from a table QR code (ORD-001, ADR-012). The table comes only from the QR
@@ -346,6 +347,7 @@ export async function createOrder(raw: OrderRequest, idempotencyKey: string): Pr
     }
 
     await tx.insert(orderEvents).values({ id: uuidv7(), orderId, type: "ORDER_CREATED", toStatus: "NEW", data: { orderRef } });
+    await publish(tx, { type: "order.created", branchId: table.branchId, orderId, sessionId, tableId: table.tableId });
 
     const created: CreatedOrder = { orderId, orderRef, trackingToken, currency: quote.currency, totals: quote.totals };
     await tx.insert(idempotencyKeys).values({ scope, key, requestHash: hash, response: created });

@@ -3,6 +3,7 @@ import { v7 as uuidv7 } from "uuid";
 import { db } from "@/server/db/client";
 import { assistanceRequests, branchSettings, diningTables, tableSessions } from "@/server/db/schema";
 import { QR_TOKEN } from "@/server/orders/create";
+import { publish } from "@/server/realtime/events";
 
 // "Request Assistance" from a table QR code (UI-005, ADR-013, SPEC §6.6). One pending request per
 // table, plus a cooldown after the last one. Customers get back only their own request's state.
@@ -65,6 +66,7 @@ export async function requestAssistance(qrToken: string, now = new Date()): Prom
       .insert(assistanceRequests)
       .values({ id: uuidv7(), branchId: table.branchId, tableId: table.id, sessionId: session?.id ?? null, createdAt: now })
       .returning({ createdAt: assistanceRequests.createdAt });
+    await publish(tx, { type: "assistance.updated", branchId: table.branchId, tableId: table.id });
     return { status: "PENDING", createdAt: row.createdAt.toISOString(), deduplicated: false };
   });
 }
