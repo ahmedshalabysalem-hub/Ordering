@@ -5,6 +5,8 @@ export const en = {
   "lang.switchLabel": "Switch to Arabic",
   "table.label": "Table {number}",
   "menu.categories": "Menu categories",
+  "menu.allCategories": "All categories",
+  "menu.categoryEmpty": "Nothing in this category right now.",
   "menu.empty": "The menu is not available yet. Please ask a member of staff.",
   "menu.soldOut": "Sold out",
   "menu.add": "Add",

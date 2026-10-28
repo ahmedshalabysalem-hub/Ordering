@@ -39,6 +39,9 @@ test.afterAll(async () => {
 
 const cartBar = (page: Page) => page.getByRole("button", { name: /View cart|عرض السلة/ });
 
+// The menu opens on the category list (UI-006); a category shows only its own products.
+const openGuestDrinks = (page: Page) => page.getByRole("button", { name: /^(Guest drinks|مشروبات الضيوف)$/ }).click();
+
 async function toEnglish(page: Page) {
   await page.getByRole("button", { name: "التبديل إلى الإنجليزية" }).click();
   await expect(page.getByTestId("table-number")).toHaveText("Table 41");
@@ -49,8 +52,11 @@ test("a guest orders in Arabic and English, with options, and tracks the order",
   // The branch default is Arabic, right to left.
   await expect(page.getByTestId("table-number")).toHaveText("ترابيزة 41");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("heading", { name: "مشروبات الضيوف" })).toBeVisible();
   await expect(page.getByRole("button", { name: "طلب مساعدة" })).toBeVisible();
+  // Only categories at first: no products until the guest picks one.
+  await expect(page.getByRole("button", { name: "أضف مياه فوارة" })).toHaveCount(0);
+  await openGuestDrinks(page);
+  await expect(page.getByRole("heading", { name: "مشروبات الضيوف" })).toBeVisible();
 
   await toEnglish(page);
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
@@ -108,6 +114,7 @@ test("a guest orders in Arabic and English, with options, and tracks the order",
 test("a cart from another table is never sent there silently", async ({ page }) => {
   await page.goto(`/order/table/${qrA}`);
   await toEnglish(page);
+  await openGuestDrinks(page);
   await page.getByRole("button", { name: "Add Sparkling water" }).click();
   await expect(page.getByTestId("cart-count")).toHaveText("1");
 
@@ -118,6 +125,7 @@ test("a cart from another table is never sent there silently", async ({ page }) 
   await expect(page.getByRole("alertdialog")).toHaveCount(0);
   await expect(cartBar(page)).toHaveCount(0);
 
+  await openGuestDrinks(page);
   await page.getByRole("button", { name: "Add Sparkling water" }).click();
   await page.goto(`/order/table/${qrA}`);
   await page.getByRole("button", { name: "Move the items to this table" }).click();
@@ -127,6 +135,7 @@ test("a cart from another table is never sent there silently", async ({ page }) 
 test("the guest confirms a changed price before the order is placed", async ({ page }) => {
   await page.goto(`/order/table/${qrA}`);
   await toEnglish(page);
+  await openGuestDrinks(page);
   await page.getByRole("button", { name: "Add Sparkling water" }).click();
   await cartBar(page).click();
   await expect(page.getByTestId("cart-total")).toHaveText("EGP 11.40");

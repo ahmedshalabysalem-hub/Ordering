@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { money, pick, type Translate } from "@/i18n";
 import type { PublicMenu, PublicProduct } from "@/server/customer/menu";
@@ -263,66 +263,145 @@ export function OrderingApp({ qrToken, tableNumber, menu }: { qrToken: string; t
   );
 }
 
+// The menu opens on the category list; picking a category shows only its products (UI-006). The chosen
+// category lives in the URL (?c=) so the phone's back button returns to the list. A menu with a single
+// category skips the list.
 function MenuView({ menu, onOpen, onQuickAdd }: { menu: PublicMenu; onOpen: (p: PublicProduct) => void; onQuickAdd: (p: PublicProduct) => void }) {
   const { lang, t } = useLang();
+  const searchParams = useSearchParams();
+  const pushed = useRef(false);
+  const single = menu.categories.length === 1 ? menu.categories[0] : undefined;
+  const current = single ?? menu.categories.find((c) => c.id === searchParams.get("c"));
+
   if (menu.categories.length === 0) return <p className="py-10 text-center text-zinc-500">{t("menu.empty")}</p>;
-  return (
-    <div className="flex flex-col gap-6 pb-28">
-      <nav aria-label={t("menu.categories")} className="sticky top-0 z-10 -mx-4 overflow-x-auto bg-zinc-50/95 px-4 py-2 backdrop-blur">
-        <ul className="flex gap-2">
-          {menu.categories.map((c) => (
-            <li key={c.id} className="shrink-0">
-              <a href={`#cat-${c.id}`} className="flex min-h-11 items-center rounded-full border border-zinc-300 bg-white px-4 text-sm font-semibold hover:bg-zinc-100">
-                {pick(lang, c.nameAr, c.nameEn)}
-              </a>
-            </li>
-          ))}
+
+  function select(id: string) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("c", id);
+    if (current) window.history.replaceState(null, "", url);
+    else {
+      window.history.pushState(null, "", url);
+      pushed.current = true;
+    }
+    window.scrollTo({ top: 0 });
+  }
+
+  function backToCategories() {
+    if (pushed.current) {
+      pushed.current = false;
+      window.history.back();
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.delete("c");
+    window.history.replaceState(null, "", url);
+  }
+
+  if (!current) {
+    return (
+      <nav aria-label={t("menu.categories")} className="pb-28">
+        <ul className="grid grid-cols-2 gap-3">
+          {menu.categories.map((c) => {
+            const cover = c.products.find((p) => p.imageUrl)?.imageUrl;
+            const name = pick(lang, c.nameAr, c.nameEn);
+            return (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => select(c.id)}
+                  className="flex w-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white text-start shadow-sm hover:border-zinc-400"
+                >
+                  {cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- served from our own media route
+                    <img src={cover} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                  ) : (
+                    <span aria-hidden className="flex aspect-[4/3] w-full items-center justify-center bg-zinc-100 text-4xl font-bold text-zinc-400">
+                      {name.trim().charAt(0)}
+                    </span>
+                  )}
+                  <span className="flex min-h-12 items-center px-3 py-2 text-base font-bold">{name}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </nav>
+    );
+  }
 
-      {menu.categories.map((c) => (
-        <section key={c.id} id={`cat-${c.id}`} aria-labelledby={`cat-title-${c.id}`} className="scroll-mt-16">
-          <h2 id={`cat-title-${c.id}`} className="mb-3 text-lg font-bold">
-            {pick(lang, c.nameAr, c.nameEn)}
-          </h2>
-          <ul className="flex flex-col gap-3">
-            {c.products.map((p) => {
-              const name = pick(lang, p.nameAr, p.nameEn);
-              const description = pick(lang, p.descriptionAr, p.descriptionEn);
-              const hasChoices = p.groups.length > 0;
-              return (
-                <li key={p.id} className={`flex gap-3 rounded-2xl border border-zinc-200 bg-white p-3 ${p.isAvailable ? "" : "opacity-60"}`}>
-                  {p.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- served from our own media route
-                    <img src={p.imageUrl} alt="" loading="lazy" className="size-24 shrink-0 rounded-xl object-cover" />
-                  ) : null}
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <button type="button" onClick={() => onOpen(p)} disabled={!p.isAvailable} className="text-start text-base font-semibold">
-                      {name}
-                    </button>
-                    {description ? <p className="line-clamp-2 text-sm text-zinc-600">{description}</p> : null}
-                    <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                      <span className="font-semibold tabular-nums">{money(lang, p.priceMinor, menu.currency)}</span>
-                      {p.isAvailable ? (
-                        <button
-                          type="button"
-                          onClick={() => (hasChoices ? onOpen(p) : onQuickAdd(p))}
-                          aria-label={t("menu.addNamed", { name })}
-                          className="min-h-11 rounded-full bg-zinc-900 px-5 text-sm font-semibold text-white hover:bg-zinc-800"
-                        >
-                          {hasChoices ? t("menu.choose") : t("menu.add")}
-                        </button>
-                      ) : (
-                        <span className="rounded-full bg-zinc-200 px-3 py-1 text-sm font-semibold text-zinc-700">{t("menu.soldOut")}</span>
-                      )}
-                    </div>
-                  </div>
+  return (
+    <div className="flex flex-col gap-4 pb-28">
+      {single ? null : (
+        <div className="sticky top-0 z-10 -mx-4 flex flex-col gap-2 bg-zinc-50/95 px-4 py-2 backdrop-blur">
+          <button type="button" onClick={backToCategories} className="flex min-h-11 items-center gap-1 self-start rounded-full border border-zinc-300 bg-white px-4 text-sm font-semibold hover:bg-zinc-100">
+            <span aria-hidden className="rtl:rotate-180">
+              ←
+            </span>
+            {t("menu.allCategories")}
+          </button>
+          <nav aria-label={t("menu.categories")} className="-mx-4 overflow-x-auto px-4">
+            <ul className="flex gap-2">
+              {menu.categories.map((c) => (
+                <li key={c.id} className="shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => select(c.id)}
+                    aria-current={c.id === current.id ? "page" : undefined}
+                    className={`flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold ${
+                      c.id === current.id ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-300 bg-white hover:bg-zinc-100"
+                    }`}
+                  >
+                    {pick(lang, c.nameAr, c.nameEn)}
+                  </button>
                 </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))}
+              ))}
+            </ul>
+          </nav>
+        </div>
+      )}
+
+      <section aria-labelledby="cat-title">
+        <h2 id="cat-title" className="mb-3 text-lg font-bold">
+          {pick(lang, current.nameAr, current.nameEn)}
+        </h2>
+        <ul className="flex flex-col gap-3">
+          {current.products.map((p) => {
+            const name = pick(lang, p.nameAr, p.nameEn);
+            const description = pick(lang, p.descriptionAr, p.descriptionEn);
+            const hasChoices = p.groups.length > 0;
+            return (
+              <li key={p.id} className={`flex gap-3 rounded-2xl border border-zinc-200 bg-white p-3 ${p.isAvailable ? "" : "opacity-60"}`}>
+                {p.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- served from our own media route
+                  <img src={p.imageUrl} alt="" loading="lazy" className="size-24 shrink-0 rounded-xl object-cover" />
+                ) : null}
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <button type="button" onClick={() => onOpen(p)} disabled={!p.isAvailable} className="text-start text-base font-semibold">
+                    {name}
+                  </button>
+                  {description ? <p className="line-clamp-2 text-sm text-zinc-600">{description}</p> : null}
+                  <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+                    <span className="font-semibold tabular-nums">{money(lang, p.priceMinor, menu.currency)}</span>
+                    {p.isAvailable ? (
+                      <button
+                        type="button"
+                        onClick={() => (hasChoices ? onOpen(p) : onQuickAdd(p))}
+                        aria-label={t("menu.addNamed", { name })}
+                        className="min-h-11 rounded-full bg-zinc-900 px-5 text-sm font-semibold text-white hover:bg-zinc-800"
+                      >
+                        {hasChoices ? t("menu.choose") : t("menu.add")}
+                      </button>
+                    ) : (
+                      <span className="rounded-full bg-zinc-200 px-3 py-1 text-sm font-semibold text-zinc-700">{t("menu.soldOut")}</span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+      {current.products.length === 0 ? <p className="py-6 text-center text-zinc-500">{t("menu.categoryEmpty")}</p> : null}
     </div>
   );
 }

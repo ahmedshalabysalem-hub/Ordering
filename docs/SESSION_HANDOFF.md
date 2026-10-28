@@ -2,6 +2,8 @@
 
 _2026-10-28 — Project Director thread_
 
+- UI-006 (2026-10-28, branch `claude/project-thread-y7ml63`): the customer menu (`MenuView` in `src/app/order/table/[token]/ordering-app.tsx`) opens on a 2-column category grid (cover = first product image in the category, else the first letter). Tapping a category sets `?c={categoryId}` with `history.pushState`, so the phone back button returns to the grid; inside a category a back button and category chips switch views. A menu with one category skips the grid. No schema or API change. E2E helpers now tap the category before adding products.
+
 - State: DOC-002 on branch `claude/project-thread-vzn3gg`, PR pending. TEST-001..003 merged (PR #15). After DOC-002 the MVP in SPEC §30 is complete; see `docs/DELIVERY_REPORT.md` for limitations and follow-ups. Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.
 - Approved: ADR-000..017. Pending: none. Technical decisions are delegated to the Project Director (record as "APPROVED (delegated)").
 - Menu: `src/server/menu/service.ts` (categories, products, availability; audited; deactivate, never delete), `src/server/money.ts` (decimal text ↔ integer minor units, no floats), `src/server/media/` (image validation by signature, local-disk storage under `UPLOAD_DIR`), `GET /api/media/{file}`. Admin pages under `/admin/menu`.
