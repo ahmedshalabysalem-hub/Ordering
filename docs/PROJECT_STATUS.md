@@ -6,19 +6,20 @@ _Last updated: 2026-10-28_
 Phase 3 — Customer experience.
 
 ## Current state
-- Merged: PR #1 (docs, skeleton, CI), PR #2 (schema + migrations, ADR-007, ADR-008), PR #3 (AUTH-001 staff sign-in, lockout, admin bootstrap, ADR-009), PR #4 (AUTH-002 permission guards), PR #5 (TBL-001 tables + permanent QR codes), PR #6 (MENU-001 categories and products, ADR-011), PR #7 (MENU-002 option groups), PR #8 (ORD-001 customer order creation, ADR-012), PR #9 (ORD-002 table sessions and cashier table overview), PR #10 (UI-001..005 customer app, ADR-013).
-- RT-001 (live updates over SSE fed by LISTEN/NOTIFY, polling fallback; ADR-014) in REVIEW.
+- Merged: PR #1 (docs, skeleton, CI), PR #2 (schema + migrations, ADR-007, ADR-008), PR #3 (AUTH-001 staff sign-in, lockout, admin bootstrap, ADR-009), PR #4 (AUTH-002 permission guards), PR #5 (TBL-001 tables + permanent QR codes), PR #6 (MENU-001 categories and products, ADR-011), PR #7 (MENU-002 option groups), PR #8 (ORD-001 customer order creation, ADR-012), PR #9 (ORD-002 table sessions and cashier table overview), PR #10 (UI-001..005 customer app, ADR-013), PR #11 (RT-001 live updates, ADR-014).
+- OPS-001..004 (cashier dashboard, kitchen display, captains, assistance handling; ADR-015) in REVIEW.
 - The user delegated technical decisions and merges of green PRs to the Project Director (2026-10-27). Destructive or irreversible actions, production deploys, spending and real credentials still need the user.
 
 ## Completed
-- DOC-001, ARCH-001..004, DB-001, AUTH-001, AUTH-002, TBL-001, MENU-001, MENU-002, ORD-001, ORD-002, UI-001..005.
+- DOC-001, ARCH-001..004, DB-001, AUTH-001, AUTH-002, TBL-001, MENU-001, MENU-002, ORD-001, ORD-002, UI-001..005, RT-001.
 
 ## Pending decisions
 - None.
 
 ## Immediate priorities
-1. Merge RT-001.
-2. OPS-001..004 — cashier grid, kitchen screen, captains, session close UI, assistance acknowledge/resolve.
+1. Merge OPS-001..004.
+2. PAY-001 — manual payment recording and refunds.
+3. ADM-001..005, TEST-001..003, DOC-002.
 
 ## Known follow-ups
 - Orphaned menu images are not cleaned up yet.

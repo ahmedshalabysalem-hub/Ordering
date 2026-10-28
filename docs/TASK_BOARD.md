@@ -24,8 +24,11 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | UI-003 | Cart (localStorage, quantities, notes, other-table warning) | 3 | DONE (PR #10) | UI-001 | ADR-013 |
 | UI-004 | Checkout: server quote, idempotent submit, price-change confirmation | 3 | DONE (PR #10) | UI-003, ORD-001 | ADR-012, ADR-013 |
 | UI-005 | Order confirmation and tracking by token, assistance request | 3 | DONE (PR #10) | UI-004 | ADR-013 |
-| RT-001 | Real-time (SSE + NOTIFY) with fallback | 4 | REVIEW | ORD-001 | ADR-014 |
-| OPS-001..004 | Cashier grid, KDS, captains/delivery, session close | 4 | BACKLOG | RT-001 | — |
+| RT-001 | Real-time (SSE + NOTIFY) with fallback | 4 | DONE (PR #11) | ORD-001 | ADR-014 |
+| OPS-001 | Cashier dashboard: live table grid, order details, table close | 4 | REVIEW | RT-001 | ADR-015 |
+| OPS-002 | Kitchen display: tickets, status moves, age alerts, sold-out switches | 4 | REVIEW | RT-001 | ADR-015 |
+| OPS-003 | Captains: admin list, assign/reassign/unassign, mark served | 4 | REVIEW | OPS-001 | ADR-015 |
+| OPS-004 | Assistance handling (acknowledge, resolve) | 4 | REVIEW | OPS-001 | ADR-015 |
 | PAY-001 | Manual payment recording | 4 | BACKLOG | ORD-002 | — |
 | ADM-001..005 | Users, suppliers, settings, reports, audit view | 5 | BACKLOG | AUTH-002 | — |
 | TEST-001..003 | E2E A–H + permanent-QR scenario, concurrency, authz suite | 6 | BACKLOG | 3, 4, 5 | ADR-004 |
