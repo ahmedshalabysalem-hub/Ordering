@@ -25,6 +25,16 @@ async function SignedInStaff() {
         {staff.email} · {staff.roles.map((r) => r.role).join(", ") || "no role assigned"}
       </p>
       <nav className="flex flex-wrap justify-center gap-4">
+        {(can(staff, "reports.view_operational") || can(staff, "reports.view_all")) && (
+          <Link href="/admin" className="underline">
+            Admin overview
+          </Link>
+        )}
+        {(can(staff, "orders.history_recent") || can(staff, "orders.history_full")) && (
+          <Link href="/admin/orders" className="underline">
+            Order history
+          </Link>
+        )}
         {can(staff, "tables.manage") && (
           <Link href="/admin/tables" className="underline">
             Tables &amp; QR codes
