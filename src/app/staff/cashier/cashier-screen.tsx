@@ -5,7 +5,17 @@ import { useEffect, useRef, useState } from "react";
 import { formatMoney } from "@/server/money";
 import type { BoardOrder, CashierBoard, CashierTable } from "@/server/operations/boards";
 import type { TableColor } from "@/server/sessions/service";
-import { assignCaptainAction, assistanceAction, cancelOrderAction, markDeliveredAction, sessionAction } from "../actions";
+import {
+  type ActionResult,
+  assignCaptainAction,
+  assistanceAction,
+  cancelOrderAction,
+  markDeliveredAction,
+  recordPaymentAction,
+  recordRefundAction,
+  recordSessionPaymentAction,
+  sessionAction,
+} from "../actions";
 import { LiveStatus, minutesSince, playChime, useClock } from "../_components/live-status";
 import { useStaffAction } from "../_components/use-staff-action";
 
@@ -180,6 +190,7 @@ function TablePanel({
       {t.orders.map((o) => (
         <OrderCard key={o.id} order={o} board={board} now={now} money={money} action={action} />
       ))}
+      {session && board.canRecordPayments ? <PayAll table={t} board={board} money={money} action={action} /> : null}
       {session ? (
         <div className="flex flex-wrap gap-2 border-t border-zinc-200 pt-3">
           {session.status === "OPEN" ? (
@@ -264,6 +275,7 @@ function OrderCard({ order: o, board, now, money, action }: { order: BoardOrder;
               Mark served
             </button>
           ) : null}
+          {o.paidMinor === 0 ? (
           <button
             type="button"
             disabled={action.pending}
@@ -275,8 +287,98 @@ function OrderCard({ order: o, board, now, money, action }: { order: BoardOrder;
           >
             Cancel order
           </button>
+          ) : null}
         </div>
       )}
+      {!cancelled && board.canRecordPayments && o.totalMinor > o.paidMinor ? (
+        <PayControls
+          label={`Record payment · ${money(o.totalMinor - o.paidMinor)}`}
+          idPrefix={o.id}
+          board={board}
+          action={action}
+          onPay={(methodId, reference) => recordPaymentAction(o.id, o.version, methodId, o.totalMinor - o.paidMinor, reference)}
+        />
+      ) : null}
+      {board.canRefund && o.paidMinor > 0 ? (
+        <button
+          type="button"
+          disabled={action.pending}
+          onClick={() => {
+            const amount = window.prompt(`Refund amount for ${o.orderRef} (up to ${money(o.paidMinor)})`);
+            if (!amount) return;
+            const reason = window.prompt("Reason for the refund");
+            if (reason) action.run(() => recordRefundAction(o.id, o.version, amount, board.currency, reason));
+          }}
+          className="self-start text-sm font-semibold text-red-700 underline"
+        >
+          Refund…
+        </button>
+      ) : null}
     </article>
+  );
+}
+
+function PayControls({
+  label,
+  idPrefix,
+  board,
+  action,
+  onPay,
+}: {
+  label: string;
+  idPrefix: string;
+  board: CashierBoard;
+  action: ReturnType<typeof useStaffAction>;
+  onPay: (methodId: string, reference: string) => Promise<ActionResult>;
+}) {
+  const [methodId, setMethodId] = useState(board.paymentMethods[0]?.id ?? "");
+  const [reference, setReference] = useState("");
+  if (board.paymentMethods.length === 0) return <p className="text-sm text-zinc-500">No payment methods are active.</p>;
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg bg-zinc-50 p-2">
+      <label className="flex items-center gap-1 text-sm">
+        <span>Method</span>
+        <select id={`${idPrefix}-method`} value={methodId} onChange={(e) => setMethodId(e.target.value)} className="rounded-md border border-zinc-300 px-2 py-1">
+          {board.paymentMethods.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="flex items-center gap-1 text-sm">
+        <span className="sr-only">Reference</span>
+        <input value={reference} onChange={(e) => setReference(e.target.value)} maxLength={100} placeholder="Reference (optional)" className="w-36 rounded-md border border-zinc-300 px-2 py-1" />
+      </label>
+      <button
+        type="button"
+        disabled={action.pending || !methodId}
+        onClick={() => action.run(() => onPay(methodId, reference))}
+        className="rounded-md bg-zinc-900 px-3 py-1 text-sm font-semibold text-white"
+      >
+        {label}
+      </button>
+    </div>
+  );
+}
+
+function PayAll({ table: t, board, money, action }: { table: CashierTable; board: CashierBoard; money: (m: number) => string; action: ReturnType<typeof useStaffAction> }) {
+  const due = t.orders.filter((o) => o.kitchenStatus !== "CANCELLED" && o.totalMinor > o.paidMinor);
+  const total = due.reduce((sum, o) => sum + o.totalMinor - o.paidMinor, 0);
+  if (due.length < 2 || !t.session) return null;
+  const sessionId = t.session.id;
+  return (
+    <div className="flex flex-col gap-1 border-t border-zinc-200 pt-3">
+      <p className="text-sm font-semibold">
+        {due.length} orders due · {money(total)}
+      </p>
+      <PayControls
+        label={`Pay whole table · ${money(total)}`}
+        idPrefix={sessionId}
+        board={board}
+        action={action}
+        onPay={(methodId, reference) => recordSessionPaymentAction(sessionId, methodId, total, reference)}
+      />
+    </div>
   );
 }
