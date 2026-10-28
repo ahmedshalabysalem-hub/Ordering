@@ -30,13 +30,13 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | OPS-003 | Captains: admin list, assign/reassign/unassign, mark served | 4 | DONE (PR #12) | OPS-001 | ADR-015 |
 | OPS-004 | Assistance handling (acknowledge, resolve) | 4 | DONE (PR #12) | OPS-001 | ADR-015 |
 | PAY-001 | Manual payment recording, pay whole table, admin refunds | 4 | DONE (PR #13) | ORD-002 | ADR-016 |
-| ADM-001 | Users and roles: create, role, deactivate, reset password, last-admin guard | 5 | REVIEW | AUTH-002 | ADR-017 |
-| ADM-002 | Settings: restaurant, logo, time zone, currency, languages, tax, service, kitchen times, close policy, payment methods | 5 | REVIEW | AUTH-002 | ADR-017 |
-| ADM-003 | Suppliers | 5 | REVIEW | AUTH-002 | ADR-017 |
-| ADM-004 | Order history with detail (admin all, cashier 7 days) and admin overview | 5 | REVIEW | PAY-001 | ADR-017 |
-| ADM-005 | Reports (SPEC §22) with date filters and CSV | 5 | REVIEW | PAY-001 | ADR-017 |
-| ADM-006 | Audit log viewer (read-only) | 5 | REVIEW | AUD-001 | ADR-017 |
-| TEST-001..003 | E2E A–H + permanent-QR scenario, concurrency, authz suite | 6 | BACKLOG | 3, 4, 5 | ADR-004 |
+| ADM-001 | Users and roles: create, role, deactivate, reset password, last-admin guard | 5 | DONE (PR #14) | AUTH-002 | ADR-017 |
+| ADM-002 | Settings: restaurant, logo, time zone, currency, languages, tax, service, kitchen times, close policy, payment methods | 5 | DONE (PR #14) | AUTH-002 | ADR-017 |
+| ADM-003 | Suppliers | 5 | DONE (PR #14) | AUTH-002 | ADR-017 |
+| ADM-004 | Order history with detail (admin all, cashier 7 days) and admin overview | 5 | DONE (PR #14) | PAY-001 | ADR-017 |
+| ADM-005 | Reports (SPEC §22) with date filters and CSV | 5 | DONE (PR #14) | PAY-001 | ADR-017 |
+| ADM-006 | Audit log viewer (read-only) | 5 | DONE (PR #14) | AUD-001 | ADR-017 |
+| TEST-001..003 | E2E A–H + permanent-QR scenario, concurrency, authz suite, coverage map | 6 | REVIEW | 3, 4, 5 | ADR-004 |
 | DOC-002 | Setup/deploy docs + delivery report | 7 | BACKLOG | TEST-* | — |
 
 Rows like `UI-001..005` are split into individual tasks when their phase starts.

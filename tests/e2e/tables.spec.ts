@@ -17,15 +17,15 @@ async function signIn(page: Page) {
   await expect(page).toHaveURL(/\/staff$/);
 }
 
-test("admin creates table 12, gets its permanent QR code and the customer link works", async ({ page, browser }) => {
+test("admin creates a table, gets its permanent QR code and the customer link works", async ({ page, browser }) => {
   await signIn(page);
   await page.getByRole("link", { name: "Tables & QR codes" }).click();
-  await page.getByLabel("Table number").fill("12");
+  await page.getByLabel("Table number").fill("14");
   await page.getByLabel("Section (optional)").fill("Terrace");
   await page.getByRole("button", { name: "Create table" }).click();
 
-  await expect(page.getByRole("heading", { name: "Table 12" })).toBeVisible();
-  await expect(page.getByLabel("QR code for table 12").locator("svg")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Table 14" })).toBeVisible();
+  await expect(page.getByLabel("QR code for table 14").locator("svg")).toBeVisible();
   const orderUrl = (await page.getByTestId("order-url").textContent())!;
   expect(orderUrl).toMatch(/\/order\/table\/[A-Za-z0-9_-]{32}$/);
 
@@ -36,7 +36,7 @@ test("admin creates table 12, gets its permanent QR code and the customer link w
   // The customer opens the QR link without signing in.
   const customer = await openAsCustomer(browser, orderUrl);
   // The branch default language is Arabic until the customer switches.
-  await expect(customer.page.getByTestId("table-number")).toHaveText("ترابيزة 12");
+  await expect(customer.page.getByTestId("table-number")).toHaveText("ترابيزة 14");
   await customer.close();
 
   // Editing the table keeps the same code (ADR-004).
@@ -49,9 +49,9 @@ test("admin creates table 12, gets its permanent QR code and the customer link w
 
   // A duplicate number is rejected with a clear message.
   await page.goto("/admin/tables");
-  await page.getByLabel("Table number").fill("12");
+  await page.getByLabel("Table number").fill("14");
   await page.getByRole("button", { name: "Create table" }).click();
-  await expect(page.getByText("Table 12 already exists.")).toBeVisible();
+  await expect(page.getByText("Table 14 already exists.")).toBeVisible();
 });
 
 test("regenerating the QR code retires the old printed code", async ({ page, browser }) => {
@@ -83,9 +83,9 @@ test("regenerating the QR code retires the old printed code", async ({ page, bro
 test("the print card shows the restaurant, table number and QR code", async ({ page }) => {
   await signIn(page);
   await page.goto("/admin/tables");
-  await page.getByRole("link", { name: "Open table 12" }).click();
+  await page.getByRole("link", { name: "Open table 14" }).click();
   await page.getByRole("link", { name: "Print table card" }).click();
-  await expect(page.getByTestId("card-table-number")).toHaveText("Table 12");
+  await expect(page.getByTestId("card-table-number")).toHaveText("Table 14");
   await expect(page.getByText("My Restaurant")).toBeVisible();
   await expect(page.locator("article svg")).toBeVisible();
 });
