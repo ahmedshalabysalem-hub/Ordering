@@ -8,6 +8,10 @@ Project status, plan and decisions live in `CLAUDE.md` and `docs/`.
 
 Next.js 16 (App Router, TypeScript) · PostgreSQL 16 · Drizzle ORM · Tailwind CSS · Vitest · Playwright. See `docs/adr/ADR-005-stack.md`.
 
+## Run it on a Windows PC (one click)
+
+Install Docker Desktop, then double-click `start.cmd` (and `stop.cmd` to stop). Step-by-step guide in Arabic: `docs/RUN_ON_WINDOWS.md`.
+
 ## Getting started
 
 Requirements: Node 22, pnpm 10, Docker (or a local PostgreSQL 16).
