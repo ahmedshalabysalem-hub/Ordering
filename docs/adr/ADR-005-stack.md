@@ -20,7 +20,7 @@
 - PostgreSQL 16, Drizzle ORM + SQL migrations (keeps constraints, transactions and row locks explicit).
 - Auth: Better Auth (email/password, DB sessions, httpOnly cookies, rate limiting) + our own RBAC checks in every server action.
 - Real-time: Server-Sent Events from the Node server, fed by Postgres `LISTEN/NOTIFY` published after commit; clients refetch on reconnect, with polling fallback.
-- UI: Tailwind CSS + shadcn/ui (logical properties for RTL), next-intl for AR/EN.
+- UI: Tailwind CSS + shadcn/ui (logical properties for RTL), next-intl for AR/EN. _(Amended by ADR-013: the customer app uses typed in-repo dictionaries instead of next-intl.)_
 - Tests: Vitest (unit + integration against real Postgres), Playwright (E2E scenarios A–H).
 - Deploy: Docker Compose (app + Postgres) on a VPS; GitHub Actions CI.
 - Pros: one codebase and language, one deploy, no extra infra, fits every spec requirement.

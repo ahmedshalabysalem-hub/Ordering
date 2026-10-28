@@ -35,7 +35,8 @@ test("admin creates table 12, gets its permanent QR code and the customer link w
 
   // The customer opens the QR link without signing in.
   const customer = await openAsCustomer(browser, orderUrl);
-  await expect(customer.page.getByTestId("table-number")).toHaveText("Table 12");
+  // The branch default language is Arabic until the customer switches.
+  await expect(customer.page.getByTestId("table-number")).toHaveText("ترابيزة 12");
   await customer.close();
 
   // Editing the table keeps the same code (ADR-004).
@@ -71,11 +72,11 @@ test("regenerating the QR code retires the old printed code", async ({ page, bro
 
   // The page streams, so a retired code shows the not-found page rather than an HTTP 404 status.
   const retired = await openAsCustomer(browser, oldUrl);
-  await expect(retired.page.getByText("This page could not be found.")).toBeVisible();
+  await expect(retired.page.getByText("This link is not valid. Please scan the QR code on your table.")).toBeVisible();
   await expect(retired.page.getByTestId("table-number")).toHaveCount(0);
   await retired.close();
   const current = await openAsCustomer(browser, newUrl);
-  await expect(current.page.getByTestId("table-number")).toHaveText("Table 30");
+  await expect(current.page.getByTestId("table-number")).toHaveText("ترابيزة 30");
   await current.close();
 });
 
