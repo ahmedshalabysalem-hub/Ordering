@@ -1,21 +1,27 @@
 # Project Status
 
-_Last updated: 2026-10-27_
+_Last updated: 2026-10-28_
 
 ## Phase
-Phase 2 — Database and backend foundation.
+Phase 3 — Customer experience.
 
 ## Current state
-- Merged: PR #1 (docs, skeleton, CI), PR #2 (schema + migrations, ADR-007, ADR-008), PR #3 (AUTH-001 staff sign-in, lockout, admin bootstrap, ADR-009), PR #4 (AUTH-002 permission guards), PR #5 (TBL-001 tables + permanent QR codes), PR #6 (MENU-001 categories and products, ADR-011), PR #7 (MENU-002 option groups), PR #8 (ORD-001 customer order creation, ADR-012).
-- ORD-002 (table session closing/close with version checks, cashier table overview and staff APIs) in REVIEW.
+- Merged: PR #1 (docs, skeleton, CI), PR #2 (schema + migrations, ADR-007, ADR-008), PR #3 (AUTH-001 staff sign-in, lockout, admin bootstrap, ADR-009), PR #4 (AUTH-002 permission guards), PR #5 (TBL-001 tables + permanent QR codes), PR #6 (MENU-001 categories and products, ADR-011), PR #7 (MENU-002 option groups), PR #8 (ORD-001 customer order creation, ADR-012), PR #9 (ORD-002 table sessions and cashier table overview).
+- UI-001..005 (customer menu, AR/EN with RTL, cart, checkout, tracking, assistance; ADR-013) in REVIEW.
 - The user delegated technical decisions and merges of green PRs to the Project Director (2026-10-27). Destructive or irreversible actions, production deploys, spending and real credentials still need the user.
 
 ## Completed
-- DOC-001, ARCH-001..004, DB-001, AUTH-001, AUTH-002, TBL-001, MENU-001, MENU-002, ORD-001.
+- DOC-001, ARCH-001..004, DB-001, AUTH-001, AUTH-002, TBL-001, MENU-001, MENU-002, ORD-001, ORD-002.
 
 ## Pending decisions
 - None.
 
 ## Immediate priorities
-1. Merge ORD-002.
-2. UI-001..005 — customer menu, cart and order tracking (AR/EN, RTL).
+1. Merge UI-001..005.
+2. RT-001 — real-time updates (SSE + NOTIFY) with polling fallback; replaces the tracking page's 15-second refresh.
+3. OPS-001..004 — cashier grid, kitchen screen, captains, session close UI, assistance acknowledge/resolve.
+
+## Known follow-ups
+- Orphaned menu images are not cleaned up yet.
+- Public rate limits are in memory, so they only work with one app instance (ADR-009, ADR-012).
+- Unknown QR or tracking tokens show the not-found page with HTTP 200, because the pages stream.

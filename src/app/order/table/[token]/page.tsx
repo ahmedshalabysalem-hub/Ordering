@@ -1,42 +1,43 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { getPublicMenu } from "@/server/customer/menu";
 import { resolveQrToken } from "@/server/tables/service";
+import { LangProvider } from "../../_components/lang";
+import { TableUnavailable } from "../../_components/unavailable";
+import { customerLang } from "../../_lib/server-lang";
+import { OrderingApp } from "./ordering-app";
 
-export const metadata: Metadata = { title: "Order" };
+export const metadata: Metadata = { title: "Menu", robots: { index: false, follow: false } };
 
-// Customer landing page for a table QR code. The table identity comes only from the token (SPEC §6.1).
-// The menu and cart are added by the customer-ordering tasks (UI-001..005).
+// Customer ordering page for a table QR code (UI-001..005, ADR-013). The table identity comes only
+// from the token (SPEC §6.1); the menu is read fresh on every load.
 export default function OrderTablePage({ params }: PageProps<"/order/table/[token]">) {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-      <Suspense fallback={<p className="text-zinc-500">…</p>}>
-        <TableHeader params={params} />
+    <main className="flex flex-1 flex-col bg-zinc-50 text-zinc-900">
+      <Suspense fallback={<p className="p-6 text-center text-zinc-500">…</p>}>
+        <TableMenu params={params} />
       </Suspense>
     </main>
   );
 }
 
-async function TableHeader({ params }: { params: PageProps<"/order/table/[token]">["params"] }) {
+async function TableMenu({ params }: { params: PageProps<"/order/table/[token]">["params"] }) {
   const { token } = await params;
   const table = await resolveQrToken(token);
   if (table.status === "not_found") notFound();
   if (table.status === "inactive") {
     return (
-      <>
-        <h1 className="text-2xl font-semibold">{table.restaurantNameEn}</h1>
-        <p dir="rtl">هذه الترابيزة غير متاحة للطلب حالياً. من فضلك اطلب المساعدة من الموظفين.</p>
-        <p>This table is not taking orders right now. Please ask a member of staff.</p>
-      </>
+      <LangProvider initial={await customerLang("ar")}>
+        <TableUnavailable nameAr={table.restaurantNameAr} nameEn={table.restaurantNameEn} />
+      </LangProvider>
     );
   }
+  const menu = await getPublicMenu(table.branchId);
+  const lang = await customerLang(menu.defaultLanguage);
   return (
-    <>
-      <h1 className="text-2xl font-semibold">{table.restaurantNameEn}</h1>
-      <p className="text-lg" dir="rtl">{table.restaurantNameAr}</p>
-      <p className="text-3xl font-bold" data-testid="table-number">
-        Table {table.number}
-      </p>
-    </>
+    <LangProvider initial={lang}>
+      <OrderingApp qrToken={token} tableNumber={table.number} menu={menu} />
+    </LangProvider>
   );
 }

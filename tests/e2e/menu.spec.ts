@@ -55,7 +55,7 @@ test("admin builds a menu: category, product with image, price edit and sold-out
   expect(image.headers()["x-content-type-options"]).toBe("nosniff");
 
   await page.getByRole("textbox", { name: "Price (EGP)" }).fill("52");
-  await page.getByRole("button", { name: "Save" }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("status")).toHaveText("Saved.");
   await page.goto("/admin/menu");
   await expect(page.getByTestId("price-Latte")).toHaveText(/EGP\s52\.00/);
