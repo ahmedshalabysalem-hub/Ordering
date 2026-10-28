@@ -2,7 +2,7 @@
 
 _2026-10-28 — Project Director thread_
 
-- State: TEST-001..003 on branch `claude/project-thread-vzn3gg`, PR pending. ADM-001..006 merged (PR #14). Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.
+- State: DOC-002 on branch `claude/project-thread-vzn3gg`, PR pending. TEST-001..003 merged (PR #15). After DOC-002 the MVP in SPEC §30 is complete; see `docs/DELIVERY_REPORT.md` for limitations and follow-ups. Ahmed asked (2026-10-28) to finish the whole system: PAY, ADM, TEST, DOC follow.
 - Approved: ADR-000..017. Pending: none. Technical decisions are delegated to the Project Director (record as "APPROVED (delegated)").
 - Menu: `src/server/menu/service.ts` (categories, products, availability; audited; deactivate, never delete), `src/server/money.ts` (decimal text ↔ integer minor units, no floats), `src/server/media/` (image validation by signature, local-disk storage under `UPLOAD_DIR`), `GET /api/media/{file}`. Admin pages under `/admin/menu`.
 - Modifiers: `src/server/menu/modifiers.ts` (groups with min/max choices, options with extra price, product links; audited) and `src/server/menu/selection.ts` (`checkModifierSelection`, pure, for ORD-001 to validate a customer's choices and total the extras). Pages `/admin/menu/options`, `/admin/menu/options/{id}`; product edit page links groups.
@@ -20,4 +20,5 @@ _2026-10-28 — Project Director thread_
 - Verification: lint, typecheck, unit (53), integration (90), build and E2E (32) pass locally on `ordering_test`.
 - tsconfig target is ES2022 (BigInt literals). If a stale `tsconfig.tsbuildinfo` reports BigInt errors, delete it.
 - Tests: `docs/TESTING.md` has the SPEC §24 coverage map; `tests/e2e/scenarios.spec.ts` runs scenarios A–F and H (table 12; `tables.spec.ts` now uses table 14).
-- Next action: DOC-002 (setup and deployment docs, delivery report).
+- Deployment: `Dockerfile` (migrations on start), `docker-compose.prod.yml`, guide in `docs/DEPLOYMENT.md`. Verified locally with Docker on 2026-10-28. In this cloud sandbox Docker Hub was rate-limited, so base images came from `mirror.gcr.io` and the build used the session proxy; neither is needed on a normal server.
+- Next action: production deployment when Ahmed picks a server and domain; optional follow-ups are listed in the delivery report §10.

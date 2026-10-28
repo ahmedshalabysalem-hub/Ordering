@@ -36,8 +36,8 @@ Prefixes: ARCH, DB, AUTH, TBL, MENU, ORD, UI, RT, OPS, PAY, ADM, AUD, TEST, DOC
 | ADM-004 | Order history with detail (admin all, cashier 7 days) and admin overview | 5 | DONE (PR #14) | PAY-001 | ADR-017 |
 | ADM-005 | Reports (SPEC §22) with date filters and CSV | 5 | DONE (PR #14) | PAY-001 | ADR-017 |
 | ADM-006 | Audit log viewer (read-only) | 5 | DONE (PR #14) | AUD-001 | ADR-017 |
-| TEST-001..003 | E2E A–H + permanent-QR scenario, concurrency, authz suite, coverage map | 6 | REVIEW | 3, 4, 5 | ADR-004 |
-| DOC-002 | Setup/deploy docs + delivery report | 7 | BACKLOG | TEST-* | — |
+| TEST-001..003 | E2E A–H + permanent-QR scenario, concurrency, authz suite, coverage map | 6 | DONE (PR #15) | 3, 4, 5 | ADR-004 |
+| DOC-002 | Setup/deploy docs (Dockerfile, production compose, backups) + delivery report | 7 | REVIEW | TEST-* | — |
 
 Rows like `UI-001..005` are split into individual tasks when their phase starts.
 

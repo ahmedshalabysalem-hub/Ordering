@@ -36,3 +36,24 @@ pnpm dev                       # http://localhost:3000, health check at /api/hea
 | `pnpm admin:bootstrap` | Create the first administrator (refuses once one exists); password via prompt or `BOOTSTRAP_ADMIN_PASSWORD` |
 
 See `docs/TESTING.md` for the test strategy.
+
+## Running the tests locally
+
+```bash
+export DATABASE_URL=postgres://ordering:ordering@localhost:5432/ordering_test   # name must end in _test; it is reset
+export BETTER_AUTH_SECRET=any-local-test-secret-of-32-characters BETTER_AUTH_URL=http://localhost:3100
+pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration
+pnpm build && pnpm test:e2e
+```
+
+## Deployment
+
+Production with Docker Compose (HTTPS proxy, backups and restore): `docs/DEPLOYMENT.md`.
+What was built and tested, with the acceptance checklist: `docs/DELIVERY_REPORT.md`.
+
+## Using the system
+
+1. Sign in at `/login` with the bootstrap admin, then check **Admin → Settings** (currency can only change before the first order).
+2. Add the menu (**Menu**, **Product options**), the **Tables**, and print each table's QR card.
+3. Create staff accounts in **Users & roles** (cashier, kitchen) and captains in **Captains**.
+4. Open **Cashier screen** and **Kitchen screen** on the devices at the counter and in the kitchen; guests order by scanning the table QR code.
