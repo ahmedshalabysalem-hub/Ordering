@@ -70,6 +70,7 @@ test("scenarios A–E: a table's full journey from QR code to closing", async ({
     await guestPage.getByRole("button", { name: "التبديل إلى الإنجليزية" }).click();
     await guestPage.getByRole("button", { name: "Switch to Arabic" }).click();
     await expect(guestPage.locator("html")).toHaveAttribute("dir", "rtl");
+    await guestPage.getByRole("button", { name: "ركن السيناريو" }).click();
     await guestPage.getByRole("button", { name: "أضف شاي نعناع" }).click();
     await guestPage.getByRole("button", { name: "أضف بسبوسة" }).click();
     await expect(guestPage.getByTestId("cart-count")).toHaveText("2");
@@ -146,6 +147,7 @@ test("scenarios A–E: a table's full journey from QR code to closing", async ({
 
     // The printed QR code still works for the next guests and starts a new session and reference.
     const next = await guest(browser, orderUrl);
+    await next.getByRole("button", { name: "ركن السيناريو" }).click();
     await next.getByRole("button", { name: "أضف شاي نعناع" }).click();
     await next.getByRole("button", { name: /عرض السلة/ }).click();
     await next.getByRole("button", { name: /أرسل الطلب/ }).click();

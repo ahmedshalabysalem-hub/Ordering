@@ -7,6 +7,8 @@ export const ar: Record<MessageKey, string> = {
   "lang.switchLabel": "التبديل إلى الإنجليزية",
   "table.label": "ترابيزة {number}",
   "menu.categories": "أقسام المنيو",
+  "menu.allCategories": "كل الأقسام",
+  "menu.categoryEmpty": "مفيش أصناف في القسم ده دلوقتي.",
   "menu.empty": "المنيو غير متاح حالياً. من فضلك اسأل أحد الموظفين.",
   "menu.soldOut": "نفد",
   "menu.add": "أضف",
